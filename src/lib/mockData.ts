@@ -1,0 +1,41 @@
+// Initial data for the application
+// In a real app, this would be fetched from MongoDB
+export const initialProjects = [
+  { id: "1", title: "Sankalp Heights", location: "Pune West", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1600", type: "3 BHK Premium", description: "Sankalp Heights defines modern urban living..." },
+  { id: "2", title: "Sankalp Oasis", location: "Pune East", image: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1600", type: "2 & 3 BHK Apartments", description: "A seamless blend of nature and architecture..." },
+  { id: "3", title: "Sankalp Residency", location: "Central Pune", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1600", type: "4 BHK Luxury", description: "Located in the heart of the city..." },
+  { id: "4", title: "Sankalp Greens", location: "Hinjewadi", image: "https://images.unsplash.com/photo-1628611225249-6c3c7c689552?w=1600", type: "2 BHK Smart Homes", description: "Step into the future with Sankalp Greens..." },
+  { id: "5", title: "Sankalp Villas", location: "Lonavala", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600", type: "5 BHK Villas", description: "Your private retreat in the hills..." },
+];
+
+export const initialBlogs = [
+  { id: 1, title: "Sankalp Heights - Urban Luxury", category: "Premium 3BHK", image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800", date: "Oct 12, 2025" },
+  { id: 2, title: "Sankalp Oasis - Natural Living", category: "Eco-Friendly", image: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800", date: "Sep 22, 2025" },
+  { id: 3, title: "Sankalp Residency Overview", category: "Luxury 4BHK", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800", date: "Aug 15, 2025" },
+  { id: 4, title: "Why Sankalp Greens?", category: "Smart Homes", image: "https://images.unsplash.com/photo-1628611225249-6c3c7c689552?w=800", date: "Jul 10, 2025" },
+  { id: 5, title: "Sankalp Villas Retreat", category: "Villas", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800", date: "Jun 05, 2025" },
+  { id: 6, title: "Future of Real Estate in Pune", category: "Insights", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800", date: "May 20, 2025" },
+];
+
+export const initialAmenities = [
+  { id: 1, name: "Luxury Clubhouse", icon: "Home" },
+  { id: 2, name: "Swimming Pool", icon: "Droplets" },
+  { id: 3, name: "Gymnasium", icon: "Dumbbell" },
+  { id: 4, name: "Kids Play Area", icon: "Gamepad" },
+  { id: 5, name: "Yoga Deck", icon: "Wind" },
+  { id: 6, name: "Jogging Track", icon: "Timer" },
+];
+
+export const initialFloorPlans = [
+  { id: 1, type: "2BHK", area: "1,150 sq.ft.", img: "https://images.unsplash.com/photo-1628192078696-6e47c1b8f106?w=600", project: "Sankalp Oasis" },
+  { id: 2, type: "3BHK", area: "1,550 sq.ft.", img: "https://images.unsplash.com/photo-1596495577610-8b14e3049fb5?w=600", project: "Sankalp Heights" },
+  { id: 3, type: "4BHK", area: "2,200 sq.ft.", img: "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?w=600", project: "Sankalp Residency" },
+];
+
+export const initialLeads = [
+  { id: 1, name: "Rahul Sharma", email: "rahul@example.com", phone: "+91 98765 43210", project: "Sankalp Heights", message: "Interested in a 3BHK high-floor unit.", status: "New", date: "2 hours ago" },
+  { id: 2, name: "Sneha Patil", email: "sneha@gmail.com", phone: "+91 87654 32109", project: "Sankalp Oasis", message: "Looking for price list and brochure.", status: "Follow-up", date: "5 hours ago" },
+  { id: 3, name: "Amit Verma", email: "amit.v@outlook.com", phone: "+91 76543 21098", project: "Sankalp Greens", message: "Want to schedule a site visit for this weekend.", status: "Completed", date: "Yesterday" },
+];
+
+
