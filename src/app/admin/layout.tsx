@@ -1,28 +1,19 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useAdmin } from "@/components/admin/AdminContext";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import { Menu, X, Bell, Search, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { isAdmin } = useAdmin();
-  const router = useRouter();
+  const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    // Note: In real production, we'd use a server-side redirect or middleware
-    // For this mock, we check on the client.
-    const auth = sessionStorage.getItem("sankalp_admin_auth");
-    if (auth !== "true" && !isAdmin) {
-      router.push("/admin/login");
-    }
-  }, [isAdmin, router]);
-
-  if (!mounted) return null;
+  // Don't render the admin shell for the login page
+  const isLoginPage = pathname === "/admin/login";
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -49,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="fixed left-0 top-0 bottom-0 z-[70] lg:hidden"
             >
               <AdminSidebar />
-              <button 
+              <button
                 onClick={() => setIsSidebarOpen(false)}
                 className="absolute top-6 -right-12 text-white bg-black/20 p-2 rounded-full backdrop-blur"
               >
@@ -65,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Header/Navbar */}
         <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-40">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden text-gray-500 hover:text-[#711113]"
             >
@@ -73,9 +64,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
             <div className="hidden sm:flex items-center bg-gray-50 border border-gray-100 rounded-full px-4 py-2 w-64 lg:w-96">
               <Search size={18} className="text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search dashboard..." 
+              <input
+                type="text"
+                placeholder="Search dashboard..."
                 className="bg-transparent border-none outline-none ml-2 text-sm w-full"
               />
             </div>
@@ -86,9 +77,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-[#F5C33C] rounded-full border-2 border-white"></span>
             </button>
-            
+
             <div className="h-10 w-px bg-gray-100 mx-2"></div>
-            
+
             <div className="flex items-center gap-3 group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-all">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-gray-900 group-hover:text-[#711113]">Admin User</p>
