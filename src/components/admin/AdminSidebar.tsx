@@ -16,16 +16,19 @@ import {
   Users,
   HelpCircle,
   ImageIcon,
-  Layers
+  Layers,
+  Info,
+  HeartHandshake
 } from "lucide-react";
 import { useAdmin } from "./AdminContext";
+import { motion } from "framer-motion";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
+  { name: "About", icon: Info, href: "/admin/about" },
   { name: "Projects", icon: Building2, href: "/admin/projects" },
+  { name: "CSR", icon: HeartHandshake, href: "/admin/csr" },
   { name: "Blog Posts", icon: Newspaper, href: "/admin/blog" },
-  { name: "Amenities", icon: Sparkles, href: "/admin/amenities" },
-  { name: "Floor Plans", icon: Map, href: "/admin/floorplans" },
   { name: "Contact Hub", icon: Mail, href: "/admin/contacts" },
 ];
 
@@ -41,70 +44,108 @@ const accountItems = [
   { name: "Admin Profile", icon: UserCircle, href: "/admin/profile" },
 ];
 
-export default function AdminSidebar() {
+function AdminSidebar() {
   const pathname = usePathname();
   const { logout } = useAdmin();
+
+  const sidebarVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
+  };
 
   const NavItem = ({ item }: { item: { name: string; icon: React.ElementType; href: string } }) => {
     const isActive = pathname === item.href;
     return (
-      <Link
-        href={item.href}
-        className={`flex items-center justify-between p-3.5 rounded-xl transition-all group ${
-          isActive
-            ? "bg-[#711113]/5 text-[#711113] shadow-sm"
-            : "text-gray-500 hover:bg-gray-50 hover:text-[#29B1D2]"
-        }`}
-      >
-        <div className="flex items-center gap-3">
-          <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-[#711113]" : "group-hover:text-[#29B1D2]"} />
-          <span className={`text-sm tracking-wide font-semibold ${isActive ? "font-bold" : ""}`}>{item.name}</span>
-        </div>
-        {isActive && <div className="w-1.5 h-1.5 rounded-full bg-[#711113]"></div>}
-        {!isActive && <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
-      </Link>
+      <motion.div variants={itemVariants}>
+        <Link
+          href={item.href}
+          className={`flex items-center justify-between p-2.5 rounded-xl transition-all group relative overflow-hidden ${
+            isActive
+              ? "bg-[#711113] text-white shadow-lg shadow-[#711113]/20"
+              : "text-gray-500 hover:bg-gray-50 hover:text-[#711113]"
+          }`}
+        >
+          {isActive && (
+            <motion.div 
+              layoutId="activeNav"
+              className="absolute inset-0 bg-[#711113] z-0"
+            />
+          )}
+          <div className="flex items-center gap-3 relative z-10">
+            <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} className={isActive ? "text-white" : "group-hover:text-[#711113] transition-colors"} />
+            <span className={`text-[12px] tracking-wide font-black ${isActive ? "" : "font-semibold"}`}>{item.name}</span>
+          </div>
+          {isActive && (
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="w-1 h-1 rounded-full bg-white relative z-10 shadow-sm"
+            ></motion.div>
+          )}
+          {!isActive && <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all relative z-10" />}
+        </Link>
+      </motion.div>
     );
   };
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-64 md:w-72 bg-white border-r border-gray-100 flex flex-col z-50 overflow-y-auto">
+    <aside className="w-full h-full bg-white border-r border-gray-200/50 shadow-sm flex flex-col z-50 overflow-y-auto overflow-x-hidden">
       {/* Branding */}
-      <div className="p-6 border-b border-gray-50 flex items-center gap-3 shrink-0">
-        <div className="w-10 h-10 bg-[#711113] rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg">
+      <div className="p-6 pb-8 flex items-center gap-3 shrink-0">
+        <div className="w-10 h-10 bg-[#711113] rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-xl shadow-[#711113]/20 transition-transform hover:scale-105">
           S
         </div>
         <div>
-          <h2 className="text-[#711113] font-bold text-lg uppercase tracking-tight">Sankalp</h2>
-          <p className="text-[10px] text-[#29B1D2] font-bold uppercase tracking-widest leading-none">Management</p>
+          <h2 className="text-[#711113] font-black text-lg uppercase tracking-tighter leading-none mb-1">SANKALP</h2>
+          <p className="text-[9px] text-[#29B1D2] font-black uppercase tracking-[0.3em] leading-none">Console</p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3 ml-4">Main Navigation</p>
+      <motion.nav 
+        variants={sidebarVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex-1 px-3 space-y-1"
+      >
+        <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3 ml-3">Main Interface</p>
         {menuItems.map(item => <NavItem key={item.href} item={item} />)}
 
-        <div className="pt-4 pb-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3 ml-4">Website Content</p>
+        <div className="pt-6 pb-2">
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3 ml-3">Web Content</p>
           {contentItems.map(item => <NavItem key={item.href} item={item} />)}
         </div>
 
         <div className="pt-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3 ml-4">Account</p>
+          <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.3em] mb-3 ml-3">User Settings</p>
           {accountItems.map(item => <NavItem key={item.href} item={item} />)}
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-gray-50 shrink-0">
-        <button
+      <div className="p-5 mt-6 border-t border-gray-50 shrink-0">
+        <motion.button
+          whileHover={{ x: 5 }}
           onClick={logout}
-          className="w-full flex items-center gap-3 p-4 text-red-500 hover:bg-red-50 rounded-xl transition-all font-bold text-sm"
+          className="w-full flex items-center gap-3 p-3.5 text-rose-500 hover:bg-rose-50 rounded-xl transition-all font-black text-[11px] uppercase tracking-widest border border-transparent hover:border-rose-100"
         >
-          <LogOut size={20} />
+          <LogOut size={16} />
           <span>Sign Out</span>
-        </button>
+        </motion.button>
       </div>
     </aside>
   );
 }
+
+export default React.memo(AdminSidebar);
