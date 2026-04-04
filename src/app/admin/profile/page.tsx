@@ -25,9 +25,8 @@ export default function AdminProfilePage() {
         </div>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all ${
-            isEditing ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-          }`}
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all ${isEditing ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+            }`}
         >
           {isEditing ? <><Save size={18} /> Save Changes</> : <><Edit3 size={18} /> Edit Profile</>}
         </button>
