@@ -103,8 +103,8 @@ function AdminSidebar() {
     <aside className="w-full h-full bg-white border-r border-gray-200/50 shadow-sm flex flex-col z-50 overflow-y-auto overflow-x-hidden">
       {/* Branding */}
       <div className="p-6 pb-8 flex items-center gap-3 shrink-0">
-        <div className="w-10 h-10 bg-[#711113] rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-xl shadow-[#711113]/20 transition-transform hover:scale-105">
-          S
+        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-md shadow-gray-200/50 border border-gray-100 transition-transform hover:scale-105 shrink-0">
+          <img src="/sankal.png" alt="Sankalp" className="w-full h-full object-contain" />
         </div>
         <div>
           <h2 className="text-[#711113] font-black text-lg uppercase tracking-tighter leading-none mb-1">SANKALP</h2>
