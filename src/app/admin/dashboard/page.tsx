@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Building2, 
   Newspaper, 
@@ -11,22 +11,10 @@ import {
   ExternalLink,
   Plus,
   ArrowRight,
-  TrendingDown
+  TrendingDown,
+  RefreshCw
 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const stats = [
-  { name: "Total Projects", value: "12", icon: Building2, color: "text-blue-600", bg: "bg-blue-50", trend: "+2 this month", trendType: "up" },
-  { name: "Blog Posts", value: "24", icon: Newspaper, color: "text-rose-600", bg: "bg-rose-50", trend: "+5 this month", trendType: "up" },
-  { name: "New Leads", value: "08", icon: Mail, color: "text-amber-600", bg: "bg-amber-50", trend: "3 urgent", trendType: "neutral" },
-  { name: "Total Visitors", value: "1.2k", icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", trend: "+12% vs last week", trendType: "up" },
-];
-
-const recentRequests = [
-  { id: 1, name: "Rahul Sharma", project: "Sankalp Heights", time: "2 hours ago", status: "New", email: "rahul@example.com" },
-  { id: 2, name: "Sneha Patil", project: "Sankalp Oasis", time: "5 hours ago", status: "Follow-up", email: "sneha@example.com" },
-  { id: 3, name: "Amit Verma", project: "Sankalp Greens", time: "Yesterday", status: "Contacted", email: "amit@example.com" },
-];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -44,6 +32,44 @@ const itemVariants = {
 };
 
 export default function DashboardPage() {
+  const [stats, setStats] = useState<any[]>([]);
+  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
+      try {
+        const [projectsRes, blogsRes, leadsRes] = await Promise.all([
+          fetch("/api/projects"),
+          fetch("/api/blog"),
+          fetch("/api/leads"),
+        ]);
+
+        const projects = await projectsRes.json();
+        const blogs = await blogsRes.json();
+        const leads = await leadsRes.json();
+
+        const newLeads = leads.filter((l: any) => l.status === "New");
+
+        setStats([
+          { name: "Total Projects", value: projects.length.toString(), icon: Building2, color: "text-blue-600", bg: "bg-blue-50", trend: "Live Projects", trendType: "neutral" },
+          { name: "Blog Posts", value: blogs.length.toString(), icon: Newspaper, color: "text-rose-600", bg: "bg-rose-50", trend: "Published Articles", trendType: "neutral" },
+          { name: "New Leads", value: newLeads.length.toString().padStart(2, '0'), icon: Mail, color: "text-amber-600", bg: "bg-amber-50", trend: `${newLeads.length} urgent`, trendType: "neutral" },
+          { name: "Total Visitors", value: "1.2k", icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", trend: "+12% vs last week", trendType: "up" },
+        ]);
+
+        setRecentRequests(leads.slice(0, 3));
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <motion.div 
       variants={containerVariants}
@@ -75,41 +101,46 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => (
-          <motion.div
-            key={stat.name}
-            variants={itemVariants}
-            whileHover={{ y: -4, scale: 1.01 }}
-            className="bg-white p-5 rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 relative overflow-hidden group"
-          >
-            {/* Decorative background element */}
-            <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full ${stat.bg} opacity-20 group-hover:scale-125 transition-transform duration-500`}></div>
-            
-            <div className="flex justify-between items-start mb-5 relative z-10">
-              <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-105 transition-transform duration-300`}>
-                <stat.icon size={18} strokeWidth={2.5} />
+        {isLoading ? (
+          [...Array(4)].map((_, i) => (
+            <div key={i} className="h-32 bg-white rounded-2xl border border-gray-100 animate-pulse" />
+          ))
+        ) : (
+          stats.map((stat, idx) => (
+            <motion.div
+              key={stat.name}
+              variants={itemVariants}
+              whileHover={{ y: -4, scale: 1.01 }}
+              className="bg-white p-5 rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 relative overflow-hidden group"
+            >
+              <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full ${stat.bg} opacity-20 group-hover:scale-125 transition-transform duration-500`}></div>
+              
+              <div className="flex justify-between items-start mb-5 relative z-10">
+                <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-105 transition-transform duration-300`}>
+                  <stat.icon size={18} strokeWidth={2.5} />
+                </div>
+                <div className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+                  stat.trendType === 'up' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 
+                  stat.trendType === 'down' ? 'text-rose-600 bg-rose-50 border-rose-100' :
+                  'text-amber-600 bg-amber-50 border-amber-100'
+                }`}>
+                  {stat.trendType === 'up' ? <TrendingUp size={10} /> : stat.trendType === 'down' ? <TrendingDown size={10} /> : null}
+                  <span>{stat.trend.split(' ')[0]}</span>
+                </div>
               </div>
-              <div className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                stat.trendType === 'up' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 
-                stat.trendType === 'down' ? 'text-rose-600 bg-rose-50 border-rose-100' :
-                'text-amber-600 bg-amber-50 border-amber-100'
-              }`}>
-                {stat.trendType === 'up' ? <TrendingUp size={10} /> : stat.trendType === 'down' ? <TrendingDown size={10} /> : null}
-                <span>{stat.trend.split(' ')[0]}</span>
+              
+              <div className="relative z-10">
+                <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">{stat.name}</h3>
+                <p className="text-2xl font-black text-gray-900 group-hover:text-[#711113] transition-colors">{stat.value}</p>
+                <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-gray-50">
+                  <p className="text-[9px] text-gray-400 font-medium italic">{stat.trend}</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="relative z-10">
-              <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">{stat.name}</h3>
-              <p className="text-2xl font-black text-gray-900 group-hover:text-[#711113] transition-colors">{stat.value}</p>
-              <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-gray-50">
-                <p className="text-[9px] text-gray-400 font-medium italic">{stat.trend}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))
+        )}
       </div>
-
+创新
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Inquiries Section */}
         <motion.div 
@@ -139,47 +170,61 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {recentRequests.map((req) => (
-                  <tr key={req.id} className="hover:bg-gray-50/80 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#29B1D2]/20 to-[#29B1D2]/5 text-[#29B1D2] flex items-center justify-center text-xs font-black border border-[#29B1D2]/10 transition-transform group-hover:rotate-6">
-                            {req.name.charAt(0)}
-                          </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-gray-900 mb-0.5">{req.name}</p>
-                          <p className="text-[9px] text-gray-400 font-medium">{req.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 hidden sm:table-cell">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1 h-1 rounded-full bg-[#711113]"></div>
-                        <span className="text-[11px] font-bold text-gray-600 transition-colors group-hover:text-[#711113]">{req.project}</span>
-                      </div>
-                      <p className="text-[8px] text-gray-400 mt-0.5 uppercase font-bold tracking-tight">{req.time}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
-                        req.status === 'New' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                        req.status === 'Follow-up' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
-                        'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                      }`}>
-                        {req.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-100 text-gray-400 hover:text-[#711113] hover:border-[#711113]/20 hover:shadow-md transition-all">
-                        <ArrowUpRight size={16} />
-                      </button>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center">
+                      <RefreshCw size={24} className="animate-spin mx-auto text-gray-200 mb-2" />
+                      <p className="text-[9px] text-gray-400 uppercase font-bold tracking-widest">Loading Inquiries...</p>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  recentRequests.map((req) => (
+                    <tr key={req._id || req.id} className="hover:bg-gray-50/80 transition-colors group">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#29B1D2]/20 to-[#29B1D2]/5 text-[#29B1D2] flex items-center justify-center text-xs font-black border border-[#29B1D2]/10 transition-transform group-hover:rotate-6">
+                              {req.name.charAt(0)}
+                            </div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-gray-900 mb-0.5">{req.name}</p>
+                            <p className="text-[9px] text-gray-400 font-medium">{req.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 hidden sm:table-cell">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-[#711113]"></div>
+                          <span className="text-[11px] font-bold text-gray-600 transition-colors group-hover:text-[#711113]">{req.project}</span>
+                        </div>
+                        <p className="text-[8px] text-gray-400 mt-0.5 uppercase font-bold tracking-tight">{req.date || req.time}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
+                          req.status === 'New' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                          req.status === 'Follow-up' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                          'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                        }`}>
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-100 text-gray-400 hover:text-[#711113] hover:border-[#711113]/20 hover:shadow-md transition-all">
+                          <ArrowUpRight size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+                {!isLoading && recentRequests.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center text-gray-400 text-[10px] uppercase font-bold tracking-widest">No recent inquiries.</td>
+                  </tr>
+                )}
               </tbody>
-            </table>
+创新            </table>
           </div>
           
           <div className="p-5 md:p-6 bg-gray-50/50 border-t border-gray-100 mt-auto">
