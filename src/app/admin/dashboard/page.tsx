@@ -42,13 +42,13 @@ export default function DashboardPage() {
       try {
         const [projectsRes, blogsRes, leadsRes] = await Promise.all([
           fetch("/api/projects"),
-          fetch("/api/blog"),
+          fetch("/api/blogs"),
           fetch("/api/leads"),
         ]);
 
-        const projects = await projectsRes.json();
-        const blogs = await blogsRes.json();
-        const leads = await leadsRes.json();
+        const projects = projectsRes.ok ? await projectsRes.json() : [];
+        const blogs = blogsRes.ok ? await blogsRes.json() : [];
+        const leads = leadsRes.ok ? await leadsRes.json() : [];
 
         const newLeads = leads.filter((l: any) => l.status === "New");
 
