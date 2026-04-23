@@ -1,14 +1,31 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Edit2, Trash2, Search, X, Check, Newspaper, Calendar, Tag } from "lucide-react";
-import { initialBlogs } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, Search, X, Check, Newspaper, Calendar, Tag, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BlogsAdminPage() {
-  const [blogs, setBlogs] = useState(initialBlogs);
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBlog, setEditingBlog] = useState<any>(null);
+
+  const fetchBlogs = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/blogs");
+      const data = await res.json();
+      setBlogs(data);
+    } catch (error) {
+      console.error("Error fetching blogs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBlogs();
+  }, [fetchBlogs]);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -39,24 +56,48 @@ export default function BlogsAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this blog post?")) {
-      setBlogs(blogs.filter(b => b.id !== id));
+      try {
+        const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setBlogs(blogs.filter(b => (b._id || b.id) !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting blog:", error);
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingBlog) {
-      setBlogs(blogs.map(b => b.id === editingBlog.id ? { ...formData, id: b.id } : b));
-    } else {
-      const newBlog = {
-        ...formData,
-        id: Math.max(...blogs.map(b => b.id), 0) + 1
-      };
-      setBlogs([newBlog, ...blogs]);
+    try {
+      if (editingBlog) {
+        const id = editingBlog._id || editingBlog.id;
+        const res = await fetch(`/api/blogs/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setBlogs(blogs.map(b => (b._id || b.id) === id ? updated : b));
+        }
+      } else {
+        const res = await fetch("/api/blogs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setBlogs([created, ...blogs]);
+        }
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving blog:", error);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -105,62 +146,73 @@ export default function BlogsAdminPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               <AnimatePresence mode="popLayout">
-                {filteredBlogs.map((blog) => (
-                  <motion.tr 
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    key={blog.id} 
-                    className="hover:bg-gray-50/50 transition-colors group"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 shadow-sm">
-                           <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-[#711113] transition-colors">{blog.title}</span>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-20 text-center">
+                      <RefreshCw size={40} className="animate-spin mx-auto text-gray-200 mb-4" />
+                      <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Loading Posts...</p>
+                    </td>
+                  </tr>
+                ) : (
+                  <>
+                    {filteredBlogs.map((blog) => (
+                      <motion.tr 
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        key={blog._id || blog.id} 
+                        className="hover:bg-gray-50/50 transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 shadow-sm">
+                               <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-[#711113] transition-colors">{blog.title}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full w-fit">
+                            <Tag size={12} className="text-[#29B1D2]" /> {blog.category}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="flex items-center gap-2 text-xs font-semibold text-gray-400">
+                            <Calendar size={14} /> {blog.date}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => handleOpenModal(blog)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                              title="Edit"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(blog._id || blog.id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                              title="Delete"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                    {filteredBlogs.length === 0 && (
+                      <div className="p-20 text-center">
+                         <Newspaper size={48} className="mx-auto text-gray-200 mb-4" />
+                         <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No matching blog posts found.</p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="flex items-center gap-2 text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full w-fit">
-                        <Tag size={12} className="text-[#29B1D2]" /> {blog.category}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                        <Calendar size={14} /> {blog.date}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button 
-                          onClick={() => handleOpenModal(blog)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                          title="Edit"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(blog.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                          title="Delete"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
+                    )}
+                  </>
+                )}
               </AnimatePresence>
             </tbody>
           </table>
-          {filteredBlogs.length === 0 && (
-            <div className="p-20 text-center">
-               <Newspaper size={48} className="mx-auto text-gray-200 mb-4" />
-               <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No matching blog posts found.</p>
-            </div>
-          )}
         </div>
       </div>
 

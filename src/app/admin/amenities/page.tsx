@@ -1,7 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Trash2, Search, X, Check, Sparkles, Home, Droplets, Dumbbell, Gamepad, Wind, Timer } from "lucide-react";
-import { initialAmenities } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Trash2, Search, X, Check, Sparkles, Home, Droplets, Dumbbell, Gamepad, Wind, Timer, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const iconMap: any = {
@@ -14,9 +13,27 @@ const iconMap: any = {
 };
 
 export default function AmenitiesAdminPage() {
-  const [amenities, setAmenities] = useState(initialAmenities);
+  const [amenities, setAmenities] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchAmenities = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/amenities");
+      const data = await res.json();
+      setAmenities(data);
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAmenities();
+  }, [fetchAmenities]);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -28,21 +45,36 @@ export default function AmenitiesAdminPage() {
     a.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Remove this amenity from the website?")) {
-      setAmenities(amenities.filter(a => a.id !== id));
+      try {
+        const res = await fetch(`/api/amenities/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setAmenities(amenities.filter(a => (a._id || a.id) !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting amenity:", error);
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newAmenity = {
-      ...formData,
-      id: Math.max(...amenities.map(a => a.id), 0) + 1
-    };
-    setAmenities([...amenities, newAmenity]);
-    setIsModalOpen(false);
-    setFormData({ name: "", icon: "Home" });
+    try {
+      const res = await fetch("/api/amenities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setAmenities([...amenities, created]);
+        setIsModalOpen(false);
+        setFormData({ name: "", icon: "Home" });
+      }
+    } catch (error) {
+      console.error("Error saving amenity:", error);
+    }
   };
 
   return (
@@ -75,30 +107,39 @@ export default function AmenitiesAdminPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
         <AnimatePresence mode="popLayout">
-          {filteredAmenities.map((amenity) => {
-            const IconComponent = iconMap[amenity.icon] || Home;
-            return (
-              <motion.div
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                key={amenity.id}
-                className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 relative group hover:border-[#29B1D2] transition-all"
-              >
-                <button 
-                  onClick={() => handleDelete(amenity.id)}
-                  className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
-                <div className="w-12 h-12 bg-gray-50 text-[#711113] rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-[#711113] group-hover:text-white transition-all">
-                   <IconComponent size={24} />
-                </div>
-                <span className="text-xs font-bold text-gray-900 text-center uppercase tracking-wider">{amenity.name}</span>
-              </motion.div>
-            );
-          })}
+          {isLoading ? (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
+              <RefreshCw size={40} className="animate-spin mb-4 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">Loading Amenities...</p>
+            </div>
+          ) : (
+            <>
+              {filteredAmenities.map((amenity) => {
+                const IconComponent = iconMap[amenity.icon] || Home;
+                return (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    key={amenity._id || amenity.id}
+                    className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-3 relative group hover:border-[#29B1D2] transition-all"
+                  >
+                    <button 
+                      onClick={() => handleDelete(amenity._id || amenity.id)}
+                      className="absolute top-2 right-2 p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    <div className="w-12 h-12 bg-gray-50 text-[#711113] rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-[#711113] group-hover:text-white transition-all">
+                       <IconComponent size={24} />
+                    </div>
+                    <span className="text-xs font-bold text-gray-900 text-center uppercase tracking-wider">{amenity.name}</span>
+                  </motion.div>
+                );
+              })}
+            </>
+          )}
         </AnimatePresence>
       </div>
 

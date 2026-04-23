@@ -1,13 +1,30 @@
 "use client";
-import React, { useState } from "react";
-import { Trash2, Search, Mail, Phone, User, Calendar, MessageSquare, CheckCircle, Clock, AlertCircle } from "lucide-react";
-import { initialLeads } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Trash2, Search, Mail, Phone, User, Calendar, MessageSquare, CheckCircle, Clock, AlertCircle, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ContactsAdminPage() {
-  const [leads, setLeads] = useState(initialLeads);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLead, setSelectedLead] = useState<any>(null);
+
+  const fetchLeads = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/leads");
+      const data = await res.json();
+      setLeads(data);
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
 
   const filteredLeads = leads.filter(l => 
     l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -15,17 +32,39 @@ export default function ContactsAdminPage() {
     l.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Permanently delete this inquiry?")) {
-      setLeads(leads.filter(l => l.id !== id));
-      if (selectedLead?.id === id) setSelectedLead(null);
+      try {
+        const res = await fetch(`/api/leads/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setLeads(leads.filter(l => (l._id || l.id) !== id));
+          if ((selectedLead?._id || selectedLead?.id) === id) setSelectedLead(null);
+        }
+      } catch (error) {
+        console.error("Error deleting lead:", error);
+      }
     }
   };
 
-  const updateStatus = (id: number, newStatus: string) => {
-    setLeads(leads.map(l => l.id === id ? { ...l, status: newStatus } : l));
-    if (selectedLead?.id === id) {
-      setSelectedLead({ ...selectedLead, status: newStatus });
+  const updateStatus = async (id: string, newStatus: string) => {
+    const lead = leads.find(l => (l._id || l.id) === id);
+    if (!lead) return;
+
+    const updatedLead = { ...lead, status: newStatus };
+    try {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedLead),
+      });
+      if (res.ok) {
+        setLeads(leads.map(l => (l._id || l.id) === id ? updatedLead : l));
+        if ((selectedLead?._id || selectedLead?.id) === id) {
+          setSelectedLead(updatedLead);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating lead status:", error);
     }
   };
 
@@ -65,49 +104,60 @@ export default function ContactsAdminPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               <AnimatePresence mode="popLayout">
-                {filteredLeads.map((lead) => (
-                  <motion.tr 
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    key={lead.id} 
-                    onClick={() => setSelectedLead(lead)}
-                    className={`cursor-pointer transition-colors group ${selectedLead?.id === lead.id ? "bg-[#711113]/5" : "hover:bg-gray-50/50"}`}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-gray-900">{lead.name}</span>
-                        <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">{lead.date}</span>
-                      </div>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={4} className="py-20 text-center">
+                      <RefreshCw size={40} className="animate-spin mx-auto text-gray-200 mb-4" />
+                      <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">Loading Inquiries...</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm font-semibold text-gray-600 group-hover:text-[#711113] transition-colors">{lead.project}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          lead.status === 'New' ? 'bg-yellow-400 animate-pulse' :
-                          lead.status === 'Follow-up' ? 'bg-blue-400' :
-                          'bg-green-400'
-                        }`}></div>
-                        <span className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">{lead.status}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                       <button 
-                        onClick={(e) => { e.stopPropagation(); handleDelete(lead.id); }}
-                        className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                       >
-                         <Trash2 size={18} />
-                       </button>
-                    </td>
-                  </motion.tr>
-                ))}
+                  </tr>
+                ) : (
+                  <>
+                    {filteredLeads.map((lead) => (
+                      <motion.tr 
+                        layout
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        key={lead._id || lead.id} 
+                        onClick={() => setSelectedLead(lead)}
+                        className={`cursor-pointer transition-colors group ${ (selectedLead?._id || selectedLead?.id) === (lead._id || lead.id) ? "bg-[#711113]/5" : "hover:bg-gray-50/50"}`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-gray-900">{lead.name}</span>
+                            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">{lead.date}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm font-semibold text-gray-600 group-hover:text-[#711113] transition-colors">{lead.project}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${
+                              lead.status === 'New' ? 'bg-yellow-400 animate-pulse' :
+                              lead.status === 'Follow-up' ? 'bg-blue-400' :
+                              'bg-green-400'
+                            }`}></div>
+                            <span className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">{lead.status}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                           <button 
+                            onClick={(e) => { e.stopPropagation(); handleDelete(lead._id || lead.id); }}
+                            className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                           >
+                             <Trash2 size={18} />
+                           </button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </>
+                )}
               </AnimatePresence>
             </tbody>
           </table>
-          {filteredLeads.length === 0 && (
+          {filteredLeads.length === 0 && !isLoading && (
              <div className="p-20 text-center text-gray-400 text-xs font-bold uppercase tracking-widest">No inquiries match your search.</div>
           )}
         </div>
@@ -124,7 +174,7 @@ export default function ContactsAdminPage() {
         <AnimatePresence mode="wait">
           {selectedLead ? (
             <motion.div 
-              key={selectedLead.id}
+              key={selectedLead._id || selectedLead.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -166,19 +216,19 @@ export default function ContactsAdminPage() {
                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Action Progress</span>
                  <div className="flex gap-2">
                     <button 
-                      onClick={() => updateStatus(selectedLead.id, 'New')}
+                      onClick={() => updateStatus(selectedLead._id || selectedLead.id, 'New')}
                       className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${selectedLead.status === 'New' ? 'bg-yellow-400 text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <Clock size={14} className="mx-auto mb-1" /> New
                     </button>
                     <button 
-                      onClick={() => updateStatus(selectedLead.id, 'Follow-up')}
+                      onClick={() => updateStatus(selectedLead._id || selectedLead.id, 'Follow-up')}
                       className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${selectedLead.status === 'Follow-up' ? 'bg-blue-400 text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <AlertCircle size={14} className="mx-auto mb-1" /> Follow
                     </button>
                     <button 
-                      onClick={() => updateStatus(selectedLead.id, 'Completed')}
+                      onClick={() => updateStatus(selectedLead._id || selectedLead.id, 'Completed')}
                       className={`flex-1 py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${selectedLead.status === 'Completed' ? 'bg-green-400 text-white shadow-lg' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <CheckCircle size={14} className="mx-auto mb-1" /> Close

@@ -1,14 +1,31 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Edit2, Trash2, Search, Check, AlertCircle, Image as ImageIcon, MapPin, AlignLeft, Layers, ArrowLeft, Building2, ChevronRight, ChevronLeft, List, IndianRupee, Sparkles, Map, Navigation, X } from "lucide-react";
-import { initialProjects } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, Search, Check, AlertCircle, Image as ImageIcon, MapPin, AlignLeft, Layers, ArrowLeft, Building2, ChevronRight, ChevronLeft, List, IndianRupee, Sparkles, Map, Navigation, X, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ProjectsAdminPage() {
-  const [projects, setProjects] = useState(initialProjects);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
+
+  const fetchProjects = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/projects");
+      const data = await res.json();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,8 +66,8 @@ export default function ProjectsAdminPage() {
   const [landmarkText, setLandmarkText] = useState("");
 
   const filteredProjects = projects.filter(p => 
-    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.location.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+    (p.location?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
@@ -94,27 +111,58 @@ export default function ProjectsAdminPage() {
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this project?")) {
-      setProjects(projects.filter(p => p.id !== id));
+      try {
+        const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setProjects(projects.filter(p => (p._id || p.id) !== id));
+        } else {
+          alert("Failed to delete project");
+        }
+      } catch (error) {
+        console.error("Error deleting project:", error);
+      }
     }
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!validateCurrentTab()) return;
 
-    if (editingProject) {
-      setProjects(projects.map(p => p.id === editingProject.id ? { ...formData, image: formData.banners[0] || "", id: p.id } as any : p));
-    } else {
-      const newProject = {
+    try {
+      const projectData = {
         ...formData,
         image: formData.banners[0] || "",
-        id: Math.random().toString(36).substr(2, 9)
       };
-      setProjects([newProject as any, ...projects]);
+
+      if (editingProject) {
+        const id = editingProject._id || editingProject.id;
+        const res = await fetch(`/api/projects/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(projectData),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setProjects(projects.map(p => (p._id || p.id) === id ? updated : p));
+        }
+      } else {
+        const res = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(projectData),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setProjects([created, ...projects]);
+        }
+      }
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error("Error saving project:", error);
+      alert("Failed to save project");
     }
-    setIsFormOpen(false);
   };
 
   const validateCurrentTab = (): boolean => {
@@ -242,42 +290,51 @@ export default function ProjectsAdminPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {paginatedProjects.map((project) => (
-                <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={project.id} className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all flex flex-col">
-                  <div className="h-48 relative overflow-hidden shrink-0">
-                    <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute top-4 right-4 flex gap-2">
-                       <button onClick={() => handleOpenForm(project)} className="p-2 bg-white/90 backdrop-blur text-blue-600 rounded-lg shadow-lg hover:bg-blue-600 hover:text-white transition-all transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
-                         <Edit2 size={16} />
-                       </button>
-                       <button onClick={() => handleDelete(project.id)} className="p-2 bg-white/90 backdrop-blur text-red-600 rounded-lg shadow-lg hover:bg-red-600 hover:text-white transition-all transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 delay-75">
-                         <Trash2 size={16} />
-                       </button>
-                    </div>
-                    <div className="absolute bottom-4 left-4 flex gap-2">
-                      <span className="bg-[#29B1D2] text-white text-[10px] font-bold uppercase px-3 py-1 rounded shadow-lg">{project.type}</span>
-                    </div>
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#711113] transition-colors line-clamp-1">{project.title}</h3>
-                    <div className="flex items-center gap-1 text-gray-400 text-xs mt-1 mb-4">
-                       <MapPin size={14} /> {project.location}
-                    </div>
-                    <p className="text-gray-500 text-xs line-clamp-2 leading-relaxed mb-6 flex-1">{project.description}</p>
-                    <div className="pt-4 border-t border-gray-50 flex gap-2 mt-auto">
-                       <button onClick={() => handleOpenForm(project)} className="flex-1 py-2 rounded-lg bg-gray-50 border border-gray-100 text-gray-600 font-bold text-[10px] tracking-widest uppercase hover:bg-[#711113] hover:text-white hover:border-[#711113] transition-all">
-                         Manage Details
-                       </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-              
-              {paginatedProjects.length === 0 && (
-                <div className="col-span-1 md:col-span-2 lg:col-span-3 py-16 text-center text-gray-400">
-                  <Building2 size={48} className="mx-auto mb-4 opacity-20" />
-                  <p>No projects found matching your search.</p>
+              {isLoading ? (
+                <div className="col-span-1 md:col-span-2 lg:col-span-3 py-20 flex flex-col items-center justify-center text-gray-400">
+                  <RefreshCw size={40} className="animate-spin mb-4 opacity-20" />
+                  <p className="text-xs font-bold uppercase tracking-widest">Loading Projects...</p>
                 </div>
+              ) : (
+                <>
+                  {paginatedProjects.map((project) => (
+                    <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={project._id || project.id} className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all flex flex-col">
+                      <div className="h-48 relative overflow-hidden shrink-0">
+                        <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <div className="absolute top-4 right-4 flex gap-2">
+                          <button onClick={() => handleOpenForm(project)} className="p-2 bg-white/90 backdrop-blur text-blue-600 rounded-lg shadow-lg hover:bg-blue-600 hover:text-white transition-all transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+                            <Edit2 size={16} />
+                          </button>
+                          <button onClick={() => handleDelete(project._id || project.id)} className="p-2 bg-white/90 backdrop-blur text-red-600 rounded-lg shadow-lg hover:bg-red-600 hover:text-white transition-all transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 delay-75">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <div className="absolute bottom-4 left-4 flex gap-2">
+                          <span className="bg-[#29B1D2] text-white text-[10px] font-bold uppercase px-3 py-1 rounded shadow-lg">{project.type}</span>
+                        </div>
+                      </div>
+                      <div className="p-6 flex flex-col flex-1">
+                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#711113] transition-colors line-clamp-1">{project.title}</h3>
+                        <div className="flex items-center gap-1 text-gray-400 text-xs mt-1 mb-4">
+                          <MapPin size={14} /> {project.location}
+                        </div>
+                        <p className="text-gray-500 text-xs line-clamp-2 leading-relaxed mb-6 flex-1">{project.description}</p>
+                        <div className="pt-4 border-t border-gray-50 flex gap-2 mt-auto">
+                          <button onClick={() => handleOpenForm(project)} className="flex-1 py-2 rounded-lg bg-gray-50 border border-gray-100 text-gray-600 font-bold text-[10px] tracking-widest uppercase hover:bg-[#711113] hover:text-white hover:border-[#711113] transition-all">
+                            Manage Details
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                  
+                  {paginatedProjects.length === 0 && (
+                    <div className="col-span-1 md:col-span-2 lg:col-span-3 py-16 text-center text-gray-400">
+                      <Building2 size={48} className="mx-auto mb-4 opacity-20" />
+                      <p>No projects found matching your search.</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

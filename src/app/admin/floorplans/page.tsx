@@ -1,14 +1,31 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Edit2, Trash2, Search, X, Check, Map, Maximize, Building } from "lucide-react";
-import { initialFloorPlans } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, Search, X, Check, Map, Maximize, Building, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function FloorPlansAdminPage() {
-  const [floorPlans, setFloorPlans] = useState(initialFloorPlans);
+  const [floorPlans, setFloorPlans] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<any>(null);
+
+  const fetchPlans = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/floorplans");
+      const data = await res.json();
+      setFloorPlans(data);
+    } catch (error) {
+      console.error("Error fetching floor plans:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPlans();
+  }, [fetchPlans]);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -34,24 +51,48 @@ export default function FloorPlansAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Delete this floor plan?")) {
-      setFloorPlans(floorPlans.filter(p => p.id !== id));
+      try {
+        const res = await fetch(`/api/floorplans/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setFloorPlans(floorPlans.filter(p => (p._id || p.id) !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting floor plan:", error);
+      }
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingPlan) {
-      setFloorPlans(floorPlans.map(p => p.id === editingPlan.id ? { ...formData, id: p.id } : p));
-    } else {
-      const newPlan = {
-        ...formData,
-        id: Math.max(...floorPlans.map(p => p.id), 0) + 1
-      };
-      setFloorPlans([newPlan, ...floorPlans]);
+    try {
+      if (editingPlan) {
+        const id = editingPlan._id || editingPlan.id;
+        const res = await fetch(`/api/floorplans/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setFloorPlans(floorPlans.map(p => (p._id || p.id) === id ? updated : p));
+        }
+      } else {
+        const res = await fetch("/api/floorplans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setFloorPlans([created, ...floorPlans]);
+        }
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving floor plan:", error);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -84,55 +125,70 @@ export default function FloorPlansAdminPage() {
       </div>
 
       {/* Plans List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence mode="popLayout">
-          {filteredPlans.map((plan) => (
-            <motion.div
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              key={plan.id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
-            >
-              <div className="h-40 bg-gray-50 relative overflow-hidden flex items-center justify-center p-4">
-                 <img src={plan.img} alt={plan.type} className="max-h-full max-w-full object-contain mix-blend-multiply opacity-80" />
-                 <div className="absolute top-4 right-4 flex gap-2">
-                    <button 
+          {isLoading ? (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
+              <RefreshCw size={40} className="animate-spin mb-4 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">Loading Plans...</p>
+            </div>
+          ) : (
+            <>
+              {filteredPlans.map((plan) => (
+                <motion.div
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  key={plan._id || plan.id}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
+                >
+                  <div className="h-40 bg-gray-50 relative overflow-hidden flex items-center justify-center p-4">
+                     <img src={plan.img} alt={plan.type} className="max-h-full max-w-full object-contain mix-blend-multiply opacity-80" />
+                     <div className="absolute top-4 right-4 flex gap-2">
+                        <button 
+                          onClick={() => handleOpenModal(plan)}
+                          className="p-2 bg-white/90 backdrop-blur text-blue-600 rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition-all"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(plan._id || plan.id)}
+                          className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                     </div>
+                  </div>
+                  <div className="p-6">
+                     <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{plan.type}</h3>
+                          <div className="flex items-center gap-1 text-gray-400 text-xs mt-0.5">
+                             <Building size={14} /> {plan.project}
+                          </div>
+                        </div>
+                        <span className="bg-[#29B1D2]/10 text-[#29B1D2] px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                           <Maximize size={12} /> {plan.area}
+                        </span>
+                     </div>
+                     <button 
                       onClick={() => handleOpenModal(plan)}
-                      className="p-2 bg-white/90 backdrop-blur text-blue-600 rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition-all"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(plan.id)}
-                      className="p-2 bg-white/90 backdrop-blur text-red-500 rounded-lg shadow-sm hover:bg-red-500 hover:text-white transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                 </div>
-              </div>
-              <div className="p-6">
-                 <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{plan.type}</h3>
-                      <div className="flex items-center gap-1 text-gray-400 text-xs mt-0.5">
-                         <Building size={14} /> {plan.project}
-                      </div>
-                    </div>
-                    <span className="bg-[#29B1D2]/10 text-[#29B1D2] px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
-                       <Maximize size={12} /> {plan.area}
-                    </span>
-                 </div>
-                 <button 
-                  onClick={() => handleOpenModal(plan)}
-                  className="w-full py-2 bg-gray-50 text-gray-500 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#711113] hover:text-white transition-all"
-                 >
-                   Manage Layout
-                 </button>
-              </div>
-            </motion.div>
-          ))}
+                      className="w-full py-2 bg-gray-50 text-gray-500 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-[#711113] hover:text-white transition-all"
+                     >
+                       Manage Layout
+                     </button>
+                  </div>
+                </motion.div>
+              ))}
+              {filteredPlans.length === 0 && (
+                <div className="col-span-full py-16 text-center text-gray-400">
+                  <Map size={48} className="mx-auto mb-4 opacity-20" />
+                  <p>No floor plans found matching your search.</p>
+                </div>
+              )}
+            </>
+          )}
         </AnimatePresence>
       </div>
 

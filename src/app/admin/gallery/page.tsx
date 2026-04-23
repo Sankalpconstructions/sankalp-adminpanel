@@ -1,7 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Edit2, Trash2, Search, X, Check, ImageIcon, Tag } from "lucide-react";
-import { initialGallery } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, Search, X, Check, ImageIcon, Tag, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type GalleryItem = { id: number; title: string; category: string; image: string; project: string };
@@ -9,12 +8,30 @@ const categories = ["Interior", "Exterior", "Amenities", "Construction", "Events
 const emptyForm = { title: "", category: "Interior", image: "", project: "" };
 
 export default function GalleryAdminPage() {
-  const [gallery, setGallery] = useState<GalleryItem[]>(initialGallery);
+  const [gallery, setGallery] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<GalleryItem | null>(null);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+
+  const fetchGallery = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/gallery");
+      const data = await res.json();
+      setGallery(data);
+    } catch (error) {
+      console.error("Error fetching gallery:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchGallery();
+  }, [fetchGallery]);
 
   const filtered = gallery.filter(g => {
     const matchesSearch = g.title.toLowerCase().includes(searchTerm.toLowerCase()) || g.project.toLowerCase().includes(searchTerm.toLowerCase());
@@ -28,18 +45,48 @@ export default function GalleryAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("Delete this gallery image?")) setGallery(gallery.filter(g => g.id !== id));
+  const handleDelete = async (id: string) => {
+    if (confirm("Delete this gallery image?")) {
+      try {
+        const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setGallery(gallery.filter(g => (g._id || g.id) !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting gallery item:", error);
+      }
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingItem) {
-      setGallery(gallery.map(g => g.id === editingItem.id ? { ...formData, id: g.id } : g));
-    } else {
-      setGallery([{ ...formData, id: Math.max(...gallery.map(g => g.id), 0) + 1 }, ...gallery]);
+    try {
+      if (editingItem) {
+        const id = editingItem._id || editingItem.id;
+        const res = await fetch(`/api/gallery/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setGallery(gallery.map(g => (g._id || g.id) === id ? updated : g));
+        }
+      } else {
+        const res = await fetch("/api/gallery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setGallery([created, ...gallery]);
+        }
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving gallery item:", error);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -73,33 +120,42 @@ export default function GalleryAdminPage() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
         <AnimatePresence mode="popLayout">
-          {filtered.map(item => (
-            <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} key={item.id}
-              className="group relative rounded-2xl overflow-hidden aspect-square border border-gray-100 shadow-sm hover:shadow-md transition-all bg-gray-100"
-            >
-              <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                <p className="text-white text-xs font-bold line-clamp-1">{item.title}</p>
-                <div className="flex items-center gap-1 mt-1">
-                  <Tag size={10} className="text-[#29B1D2]" />
-                  <span className="text-[#29B1D2] text-[10px] font-bold uppercase">{item.category}</span>
+          {isLoading ? (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
+              <RefreshCw size={40} className="animate-spin mb-4 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">Loading Gallery...</p>
+            </div>
+          ) : (
+            <>
+              {filtered.map(item => (
+                <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} key={item._id || item.id}
+                  className="group relative rounded-2xl overflow-hidden aspect-square border border-gray-100 shadow-sm hover:shadow-md transition-all bg-gray-100"
+                >
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
+                    <p className="text-white text-xs font-bold line-clamp-1">{item.title}</p>
+                    <div className="flex items-center gap-1 mt-1">
+                      <Tag size={10} className="text-[#29B1D2]" />
+                      <span className="text-[#29B1D2] text-[10px] font-bold uppercase">{item.category}</span>
+                    </div>
+                  </div>
+                  <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button onClick={() => handleOpenModal(item)} className="p-1.5 bg-white/90 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Edit2 size={13} /></button>
+                    <button onClick={() => handleDelete(item._id || item.id)} className="p-1.5 bg-white/90 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><Trash2 size={13} /></button>
+                  </div>
+                </motion.div>
+              ))}
+              {filtered.length === 0 && (
+                <div className="col-span-full p-16 text-center bg-white rounded-2xl border border-gray-100">
+                  <ImageIcon size={48} className="mx-auto text-gray-200 mb-4" />
+                  <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No images found for this filter.</p>
                 </div>
-              </div>
-              <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                <button onClick={() => handleOpenModal(item)} className="p-1.5 bg-white/90 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Edit2 size={13} /></button>
-                <button onClick={() => handleDelete(item.id)} className="p-1.5 bg-white/90 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><Trash2 size={13} /></button>
-              </div>
-            </motion.div>
-          ))}
+              )}
+            </>
+          )}
         </AnimatePresence>
       </div>
-      {filtered.length === 0 && (
-        <div className="p-16 text-center bg-white rounded-2xl border border-gray-100">
-          <ImageIcon size={48} className="mx-auto text-gray-200 mb-4" />
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No images found for this filter.</p>
-        </div>
-      )}
 
       <AnimatePresence>
         {isModalOpen && (

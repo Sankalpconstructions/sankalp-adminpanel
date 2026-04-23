@@ -1,18 +1,35 @@
 "use client";
-import React, { useState } from "react";
-import { Plus, Edit2, Trash2, Search, X, Check, Users } from "lucide-react";
-import { initialTeam } from "@/lib/mockData";
+import React, { useState, useEffect, useCallback } from "react";
+import { Plus, Edit2, Trash2, Search, X, Check, Users, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type TeamMember = { id: number; name: string; role: string; image: string; bio: string };
 const emptyForm = { name: "", role: "", image: "", bio: "" };
 
 export default function TeamAdminPage() {
-  const [team, setTeam] = useState<TeamMember[]>(initialTeam);
+  const [team, setTeam] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<TeamMember | null>(null);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+
+  const fetchTeam = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/team");
+      const data = await res.json();
+      setTeam(data);
+    } catch (error) {
+      console.error("Error fetching team:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTeam();
+  }, [fetchTeam]);
 
   const filtered = team.filter(t =>
     t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,18 +42,48 @@ export default function TeamAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("Remove this team member?")) setTeam(team.filter(t => t.id !== id));
+  const handleDelete = async (id: string) => {
+    if (confirm("Remove this team member?")) {
+      try {
+        const res = await fetch(`/api/team/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setTeam(team.filter(t => (t._id || t.id) !== id));
+        }
+      } catch (error) {
+        console.error("Error deleting team member:", error);
+      }
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingItem) {
-      setTeam(team.map(t => t.id === editingItem.id ? { ...formData, id: t.id } : t));
-    } else {
-      setTeam([{ ...formData, id: Math.max(...team.map(t => t.id), 0) + 1 }, ...team]);
+    try {
+      if (editingItem) {
+        const id = editingItem._id || editingItem.id;
+        const res = await fetch(`/api/team/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const updated = await res.json();
+          setTeam(team.map(t => (t._id || t.id) === id ? updated : t));
+        }
+      } else {
+        const res = await fetch("/api/team", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const created = await res.json();
+          setTeam([created, ...team]);
+        }
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error saving team member:", error);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -61,33 +108,48 @@ export default function TeamAdminPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <AnimatePresence mode="popLayout">
-          {filtered.map(item => (
-            <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} key={item.id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
-            >
-              <div className="h-52 relative overflow-hidden">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute bottom-4 left-4">
-                  <p className="text-white font-bold text-lg leading-tight">{item.name}</p>
-                  <p className="text-[#29B1D2] text-xs font-bold uppercase tracking-wider">{item.role}</p>
+          {isLoading ? (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-400">
+              <RefreshCw size={40} className="animate-spin mb-4 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">Loading Team...</p>
+            </div>
+          ) : (
+            <>
+              {filtered.map(item => (
+                <motion.div layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} key={item._id || item.id}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group hover:shadow-md transition-all"
+                >
+                  <div className="h-52 relative overflow-hidden">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-4 left-4">
+                      <p className="text-white font-bold text-lg leading-tight">{item.name}</p>
+                      <p className="text-[#29B1D2] text-xs font-bold uppercase tracking-wider">{item.role}</p>
+                    </div>
+                    <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={() => handleOpenModal(item)} className="p-2 bg-white/90 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Edit2 size={14} /></button>
+                      <button onClick={() => handleDelete(item._id || item.id)} className="p-2 bg-white/90 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><Trash2 size={14} /></button>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{item.bio}</p>
+                    <button onClick={() => handleOpenModal(item)} className="mt-4 w-full py-2 bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-[#711113] hover:text-white transition-all">
+                      Edit Profile
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+              {filtered.length === 0 && (
+                <div className="col-span-full py-16 text-center text-gray-400">
+                  <Users size={48} className="mx-auto mb-4 opacity-20" />
+                  <p>No team members found matching your search.</p>
                 </div>
-                <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                  <button onClick={() => handleOpenModal(item)} className="p-2 bg-white/90 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDelete(item.id)} className="p-2 bg-white/90 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"><Trash2 size={14} /></button>
-                </div>
-              </div>
-              <div className="p-5">
-                <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{item.bio}</p>
-                <button onClick={() => handleOpenModal(item)} className="mt-4 w-full py-2 bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-[#711113] hover:text-white transition-all">
-                  Edit Profile
-                </button>
-              </div>
-            </motion.div>
-          ))}
+              )}
+            </>
+          )}
         </AnimatePresence>
       </div>
-
+创新
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
