@@ -18,7 +18,9 @@ import {
   ImageIcon,
   Layers,
   Info,
-  HeartHandshake
+  HeartHandshake,
+  Layout,
+  Star
 } from "lucide-react";
 import { useAdmin } from "./AdminContext";
 import { motion } from "framer-motion";
@@ -38,6 +40,8 @@ const contentItems = [
   { name: "Gallery", icon: ImageIcon, href: "/admin/gallery" },
   { name: "Team", icon: Users, href: "/admin/team" },
   { name: "FAQ", icon: HelpCircle, href: "/admin/faq" },
+  { name: "Floor Plans", icon: Layout, href: "/admin/floorplans" },
+  { name: "Amenities", icon: Star, href: "/admin/amenities" },
 ];
 
 const accountItems = [

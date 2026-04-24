@@ -15,9 +15,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setIsSidebarOpen(false);
   }, [pathname]);
 
-  // Don't render the admin shell for the login page
-  const isLoginPage = pathname === "/admin/login";
-  if (isLoginPage) {
+  // Don't render the admin shell for auth pages
+  const isAuthPage = ["/admin/login", "/admin/register", "/admin/forgot-password"].includes(pathname);
+  if (isAuthPage) {
     return <>{children}</>;
   }
 

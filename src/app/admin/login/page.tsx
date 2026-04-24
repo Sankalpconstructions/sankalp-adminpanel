@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2 ml-1">Admin ID</label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-2 ml-1">Email</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                   <input
@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
                     type="text"
                     name="id"
                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:bg-white transition-all shadow-sm text-sm"
-                    placeholder="Enter Admin ID"
+                    placeholder="Enter Email"
                   />
                 </div>
               </div>
@@ -90,6 +90,9 @@ export default function AdminLoginPage() {
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <a href="/admin/forgot-password" className="text-xs font-semibold text-[#29B1D2] hover:text-[#711113] transition-colors">Forgot Password?</a>
                 </div>
               </div>
 

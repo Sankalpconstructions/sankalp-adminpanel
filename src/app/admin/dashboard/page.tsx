@@ -1,11 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { 
-  Building2, 
-  Newspaper, 
-  Mail, 
-  ArrowUpRight, 
-  Users, 
+import {
+  Building2,
+  Newspaper,
+  Mail,
+  ArrowUpRight,
+  Users,
   TrendingUp,
   Clock,
   ExternalLink,
@@ -71,7 +71,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -88,14 +88,14 @@ export default function DashboardPage() {
             Welcome back, Admin. Manage your real estate empire with Sankalp's unified dashboard.
           </p>
         </motion.div>
-        
+
         <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-2.5">
-           <button className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-bold text-gray-700 hover:bg-gray-50 hover:border-[#29B1D2] transition-all flex items-center justify-center gap-2 shadow-sm">
-             <Plus size={16} /> New Project
-           </button>
-           <button className="flex-1 md:flex-none px-4 py-2 bg-[#711113] text-white rounded-lg text-[11px] font-bold hover:bg-[#5a0d0e] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#711113]/20">
-             Live Site <ExternalLink size={14} />
-           </button>
+          <button className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-bold text-gray-700 hover:bg-gray-50 hover:border-[#29B1D2] transition-all flex items-center justify-center gap-2 shadow-sm">
+            <Plus size={16} /> New Project
+          </button>
+          <button className="flex-1 md:flex-none px-4 py-2 bg-[#711113] text-white rounded-lg text-[11px] font-bold hover:bg-[#5a0d0e] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#711113]/20">
+            Live Site <ExternalLink size={14} />
+          </button>
         </motion.div>
       </section>
 
@@ -114,21 +114,20 @@ export default function DashboardPage() {
               className="bg-white p-5 rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 relative overflow-hidden group"
             >
               <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full ${stat.bg} opacity-20 group-hover:scale-125 transition-transform duration-500`}></div>
-              
+
               <div className="flex justify-between items-start mb-5 relative z-10">
                 <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-105 transition-transform duration-300`}>
                   <stat.icon size={18} strokeWidth={2.5} />
                 </div>
-                <div className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${
-                  stat.trendType === 'up' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' : 
+                <div className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${stat.trendType === 'up' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' :
                   stat.trendType === 'down' ? 'text-rose-600 bg-rose-50 border-rose-100' :
-                  'text-amber-600 bg-amber-50 border-amber-100'
-                }`}>
+                    'text-amber-600 bg-amber-50 border-amber-100'
+                  }`}>
                   {stat.trendType === 'up' ? <TrendingUp size={10} /> : stat.trendType === 'down' ? <TrendingDown size={10} /> : null}
                   <span>{stat.trend.split(' ')[0]}</span>
                 </div>
               </div>
-              
+
               <div className="relative z-10">
                 <h3 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-0.5">{stat.name}</h3>
                 <p className="text-2xl font-black text-gray-900 group-hover:text-[#711113] transition-colors">{stat.value}</p>
@@ -140,10 +139,10 @@ export default function DashboardPage() {
           ))
         )}
       </div>
-创新
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Inquiries Section */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="xl:col-span-2 bg-white rounded-2xl border border-gray-200/50 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.04)] overflow-hidden flex flex-col hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.06)] transition-all duration-500"
         >
@@ -202,11 +201,10 @@ export default function DashboardPage() {
                         <p className="text-[8px] text-gray-400 mt-0.5 uppercase font-bold tracking-tight">{req.date || req.time}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${
-                          req.status === 'New' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${req.status === 'New' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
                           req.status === 'Follow-up' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
-                          'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                        }`}>
+                            'bg-emerald-50 text-emerald-600 border border-emerald-100'
+                          }`}>
                           {req.status}
                         </span>
                       </td>
@@ -224,9 +222,9 @@ export default function DashboardPage() {
                   </tr>
                 )}
               </tbody>
-创新            </table>
+            </table>
           </div>
-          
+
           <div className="p-5 md:p-6 bg-gray-50/50 border-t border-gray-100 mt-auto">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-[10px] text-gray-400 font-medium">Showing 3 of 158 new inquiries.</p>
@@ -239,7 +237,7 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* Activity Timeline Section */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.04)] p-5 md:p-6 hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.06)] transition-all duration-500"
         >

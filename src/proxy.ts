@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 // All admin subroutes that require authentication
 const PROTECTED_PREFIX = "/admin";
-const PUBLIC_PATHS = ["/admin/login"];
+const PUBLIC_PATHS = ["/admin/login", "/admin/register", "/admin/forgot-password"];
 
-export default function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only intercept /admin/* routes
