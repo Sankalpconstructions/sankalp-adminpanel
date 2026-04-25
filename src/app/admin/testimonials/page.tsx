@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, X, Check, Star, Quote, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
+
 
 type Testimonial = { id: number; name: string; role: string; quote: string; rating: number; avatar: string };
 
@@ -49,9 +52,13 @@ export default function TestimonialsAdminPage() {
         const res = await fetch(`/api/testimonials/${id}`, { method: "DELETE" });
         if (res.ok) {
           setTestimonials(testimonials.filter(t => (t._id || t.id) !== id));
+          toast.success("Testimonial deleted successfully!");
+        } else {
+          toast.error("Failed to delete testimonial.");
         }
       } catch (error) {
         console.error("Error deleting testimonial:", error);
+        toast.error("Failed to delete testimonial.");
       }
     }
   };
@@ -69,6 +76,9 @@ export default function TestimonialsAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setTestimonials(testimonials.map(t => (t._id || t.id) === id ? updated : t));
+          toast.success("Testimonial updated successfully!");
+        } else {
+          toast.error("Failed to update testimonial.");
         }
       } else {
         const res = await fetch("/api/testimonials", {
@@ -79,11 +89,15 @@ export default function TestimonialsAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setTestimonials([created, ...testimonials]);
+          toast.success("Testimonial added successfully!");
+        } else {
+          toast.error("Failed to add testimonial.");
         }
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving testimonial:", error);
+      toast.error("Failed to save testimonial.");
     }
   };
 
@@ -180,10 +194,12 @@ export default function TestimonialsAdminPage() {
                   <textarea required rows={4} value={formData.quote} onChange={e => setFormData({ ...formData, quote: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none" placeholder="Enter client review..." />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Avatar URL</label>
-                    <input value={formData.avatar} onChange={e => setFormData({ ...formData, avatar: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="https://i.pravatar.cc/150?img=5" />
-                  </div>
+                  <ImageUpload 
+                    label="Client Avatar" 
+                    value={formData.avatar} 
+                    onChange={(url) => setFormData({ ...formData, avatar: url as string })} 
+                  />
+
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Star Rating (1-5)</label>
                     <div className="flex gap-2 p-3 bg-gray-50 border border-gray-100 rounded-xl">

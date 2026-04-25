@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Menu, X, Bell, Search, User, Globe } from "lucide-react";
+import { Menu, X, User, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+import { Toaster } from "react-hot-toast";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,11 +20,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Don't render the admin shell for auth pages
   const isAuthPage = ["/admin/login", "/admin/register", "/admin/forgot-password"].includes(pathname);
   if (isAuthPage) {
-    return <>{children}</>;
+    return (
+      <>
+        <Toaster position="top-right" />
+        {children}
+      </>
+    );
   }
 
   return (
     <div className="h-screen bg-[#FDFDFD] flex overflow-hidden">
+      <Toaster position="top-right" />
       {/* Desktop Sidebar */}
       <div className="hidden lg:block w-72 shrink-0 border-r border-gray-100 bg-white h-full overflow-y-auto">
         <AdminSidebar />
@@ -74,15 +82,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Menu size={24} />
             </button>
             
-            <div className="hidden md:flex items-center bg-gray-100/50 border border-gray-100/80 rounded-2xl px-4 py-2 w-64 lg:w-96 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#29B1D2]/20 transition-all group">
-              <Search size={18} className="text-gray-400 group-focus-within:text-[#29B1D2]" />
-              <input
-                type="text"
-                placeholder="Find anything..."
-                className="bg-transparent border-none outline-none ml-2 text-sm w-full placeholder:text-gray-400"
-              />
-            </div>
-            
             {/* Mobile Logo (only shown when sidebar is closed) */}
             <div className="lg:hidden flex items-center gap-2">
                <div className="w-8 h-8 bg-[#711113] rounded-lg flex items-center justify-center text-white font-black text-sm">S</div>
@@ -91,15 +90,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <button className="hidden sm:flex items-center gap-2 px-3 py-2 text-gray-500 hover:text-[#711113] transition-colors rounded-xl hover:bg-gray-50">
+            <a 
+              href="https://sankalpconstructions.com" 
+              target="_blank" 
+              className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-500 hover:text-[#711113] transition-all rounded-xl hover:bg-gray-100 border border-gray-100"
+            >
               <Globe size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">Main Site</span>
-            </button>
-
-            <button className="relative text-gray-400 hover:text-[#711113] transition-colors p-2.5 rounded-xl hover:bg-gray-50">
-              <Bell size={20} />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#F5C33C] rounded-full border-2 border-white"></span>
-            </button>
+              <span className="text-[10px] font-black uppercase tracking-widest hidden lg:block">Main Website</span>
+            </a>
 
             <div className="h-8 w-px bg-gray-100 hidden sm:block mx-1"></div>
 

@@ -21,23 +21,37 @@ export async function PUT(
     const { id } = await params;
     const data = await req.json();
     
-    console.log("Updating Lead ID:", id);
-    console.log("Data received for update:", JSON.stringify(data, null, 2));
-
-    const { _id, ...updateData } = data;
-    
-    // Explicitly update using findOneAndUpdate with $set
-    const lead = await Lead.findOneAndUpdate(
-      { _id: id },
-      { $set: updateData },
-      { new: true, runValidators: false, upsert: false }
-    );
-
+    // 1. Find the lead first
+    const lead = await Lead.findById(id);
     if (!lead) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404, headers: corsHeaders });
     }
 
-    console.log("Lead updated successfully. History count:", lead.history?.length);
+    if (data.reset === true) {
+      // REAL WORLD RESET: We don't delete history, we add a "Reset" event
+      lead.status = "New";
+      lead.history.push({
+        status: "New",
+        remark: "Status reset to New by Admin.",
+        date: new Date()
+      });
+    } else {
+      // NORMAL UPDATE
+      lead.status = data.status;
+      lead.history.push({
+        status: data.status,
+        remark: data.remark,
+        date: new Date()
+      });
+    }
+
+    // 2. Explicitly mark history as modified (Crucial for Mongoose arrays)
+    lead.markModified('history');
+    
+    // 3. Save the document
+    await lead.save();
+
+    console.log("Lead saved successfully. History count:", lead.history.length);
     return NextResponse.json(lead, { headers: corsHeaders });
   } catch (error: any) {
     console.error("API Update Error:", error);

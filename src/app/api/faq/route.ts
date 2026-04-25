@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
-import TeamMember from "@/models/TeamMember";
+import FAQ from "@/models/FAQ";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,8 +15,8 @@ export async function OPTIONS() {
 export async function GET() {
   try {
     await connectDB();
-    const members = await TeamMember.find({}).sort({ order: 1, createdAt: -1 });
-    return NextResponse.json(members, { headers: corsHeaders });
+    const faqs = await FAQ.find({}).sort({ order: 1, createdAt: -1 });
+    return NextResponse.json(faqs, { headers: corsHeaders });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const data = await req.json();
-    const member = await TeamMember.create(data);
-    return NextResponse.json(member, { status: 201, headers: corsHeaders });
+    const faq = await FAQ.create(data);
+    return NextResponse.json(faq, { status: 201, headers: corsHeaders });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }

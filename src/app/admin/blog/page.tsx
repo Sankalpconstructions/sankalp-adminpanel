@@ -1,7 +1,10 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Edit2, Trash2, Search, X, Check, Newspaper, Calendar, Tag, RefreshCw } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, X, Check, Newspaper, Calendar, Tag, RefreshCw, User, Clock, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
+
+const CATEGORIES = ["Insights", "Market Trends", "Guides"];
 
 export default function BlogsAdminPage() {
   const [blogs, setBlogs] = useState<any[]>([]);
@@ -30,8 +33,12 @@ export default function BlogsAdminPage() {
   // Form State
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
+    category: "Insights",
     image: "",
+    summary: "",
+    content: "",
+    author: "Sankalp Admin",
+    readingTime: "5 min read",
     date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   });
 
@@ -43,13 +50,21 @@ export default function BlogsAdminPage() {
   const handleOpenModal = (blog: any = null) => {
     if (blog) {
       setEditingBlog(blog);
-      setFormData({ ...blog });
+      setFormData({ 
+        ...blog,
+        author: blog.author || "Sankalp Admin",
+        readingTime: blog.readingTime || "5 min read"
+      });
     } else {
       setEditingBlog(null);
       setFormData({ 
         title: "", 
-        category: "", 
+        category: "Insights", 
         image: "", 
+        summary: "",
+        content: "",
+        author: "Sankalp Admin",
+        readingTime: "5 min read",
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
       });
     }
@@ -132,7 +147,7 @@ export default function BlogsAdminPage() {
         </div>
       </div>
 
-      {/* Table View for Blogs (More efficient for text-heavy lists) */}
+      {/* Table View */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -140,7 +155,7 @@ export default function BlogsAdminPage() {
               <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-[0.2em] font-bold border-b border-gray-50">
                 <th className="px-6 py-5">Post Details</th>
                 <th className="px-6 py-5">Category</th>
-                <th className="px-6 py-5">Published Date</th>
+                <th className="px-6 py-5">Author</th>
                 <th className="px-6 py-5 text-right font-medium">Actions</th>
               </tr>
             </thead>
@@ -169,7 +184,10 @@ export default function BlogsAdminPage() {
                             <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 shadow-sm">
                                <img src={blog.image} alt={blog.title} className="w-full h-full object-cover" />
                             </div>
-                            <span className="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-[#711113] transition-colors">{blog.title}</span>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-[#711113] transition-colors">{blog.title}</span>
+                              <span className="text-[10px] text-gray-400 font-semibold">{blog.date}</span>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -179,7 +197,7 @@ export default function BlogsAdminPage() {
                         </td>
                         <td className="px-6 py-4">
                           <span className="flex items-center gap-2 text-xs font-semibold text-gray-400">
-                            <Calendar size={14} /> {blog.date}
+                            <User size={14} /> {blog.author}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -203,10 +221,12 @@ export default function BlogsAdminPage() {
                       </motion.tr>
                     ))}
                     {filteredBlogs.length === 0 && (
-                      <div className="p-20 text-center">
-                         <Newspaper size={48} className="mx-auto text-gray-200 mb-4" />
-                         <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No matching blog posts found.</p>
-                      </div>
+                      <tr className="p-20 text-center">
+                         <td colSpan={4} className="py-20 text-center">
+                          <Newspaper size={48} className="mx-auto text-gray-200 mb-4" />
+                          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No matching blog posts found.</p>
+                         </td>
+                      </tr>
                     )}
                   </>
                 )}
@@ -229,7 +249,7 @@ export default function BlogsAdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden relative z-10"
+              className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden relative z-10"
             >
               <div className="bg-[#711113] p-6 text-white flex justify-between items-center">
                 <h2 className="font-bold uppercase tracking-widest flex items-center gap-2">
@@ -241,39 +261,89 @@ export default function BlogsAdminPage() {
                 </button>
               </div>
               
-              <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Article Title</label>
-                  <input 
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
-                    placeholder="Enter post title..."
-                  />
+              <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Article Title</label>
+                      <input 
+                        required
+                        value={formData.title}
+                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
+                        placeholder="Enter post title..."
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Category</label>
+                        <select 
+                          required
+                          value={formData.category}
+                          onChange={(e) => setFormData({...formData, category: e.target.value})}
+                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] text-sm font-semibold"
+                        >
+                          {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Reading Time</label>
+                        <input 
+                          required
+                          value={formData.readingTime}
+                          onChange={(e) => setFormData({...formData, readingTime: e.target.value})}
+                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
+                          placeholder="e.g. 5 min read"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Author Name</label>
+                      <input 
+                        required
+                        value={formData.author}
+                        onChange={(e) => setFormData({...formData, author: e.target.value})}
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
+                        placeholder="Author name..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <ImageUpload 
+                      label="Banner Image" 
+                      value={formData.image} 
+                      onChange={(url) => setFormData({ ...formData, image: url as string })} 
+                    />
+                    
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Short Summary (Preview)</label>
+                      <textarea 
+                        required
+                        rows={3}
+                        value={formData.summary}
+                        onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none"
+                        placeholder="Brief summary for the listing page..."
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Category</label>
-                    <input 
-                      required
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
-                      placeholder="e.g. Insights"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Banner Image URL</label>
-                    <input 
-                      required
-                      value={formData.image}
-                      onChange={(e) => setFormData({...formData, image: e.target.value})}
-                      className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
-                      placeholder="https://images.unsplash.com/..."
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 flex items-center gap-2">
+                    <FileText size={14} /> Full Article Content
+                  </label>
+                  <textarea 
+                    required
+                    rows={10}
+                    value={formData.content}
+                    onChange={(e) => setFormData({...formData, content: e.target.value})}
+                    className="w-full p-6 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-[#29B1D2] text-sm leading-relaxed"
+                    placeholder="Write your article here... You can use standard text or paste from a document."
+                  />
                 </div>
 
                 <div className="flex gap-4 pt-4">

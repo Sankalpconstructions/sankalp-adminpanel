@@ -33,3 +33,24 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
 }
+
+/* Force black text for all form inputs to ensure visibility */
+input, 
+textarea, 
+select, 
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"] {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important; /* For some browsers */
+}
+
+/* Ensure placeholders are also visible but distinct */
+::placeholder {
+  color: #666666 !important;
+  opacity: 1 !important;
+}
