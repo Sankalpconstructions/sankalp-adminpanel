@@ -1,18 +1,20 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   Building2,
   Newspaper,
   Mail,
   ArrowUpRight,
-  Users,
   TrendingUp,
   Clock,
   ExternalLink,
   Plus,
   ArrowRight,
   TrendingDown,
-  RefreshCw
+  RefreshCw,
+  Zap,
+  Users
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -33,8 +35,13 @@ const itemVariants = {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<any[]>([]);
-  const [recentRequests, setRecentRequests] = useState<any[]>([]);
+  const [allLeads, setAllLeads] = useState<any[]>([]);
+  const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -51,15 +58,40 @@ export default function DashboardPage() {
         const leads = leadsRes.ok ? await leadsRes.json() : [];
 
         const newLeads = leads.filter((l: any) => l.status === "New");
+        setAllLeads(leads);
 
         setStats([
           { name: "Total Projects", value: projects.length.toString(), icon: Building2, color: "text-blue-600", bg: "bg-blue-50", trend: "Live Projects", trendType: "neutral" },
           { name: "Blog Posts", value: blogs.length.toString(), icon: Newspaper, color: "text-rose-600", bg: "bg-rose-50", trend: "Published Articles", trendType: "neutral" },
           { name: "New Leads", value: newLeads.length.toString().padStart(2, '0'), icon: Mail, color: "text-amber-600", bg: "bg-amber-50", trend: `${newLeads.length} urgent`, trendType: "neutral" },
-          { name: "Total Visitors", value: "1.2k", icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", trend: "+12% vs last week", trendType: "up" },
         ]);
 
-        setRecentRequests(leads.slice(0, 3));
+        // Create Dynamic Activity Feed (Top 4 Only)
+        const combinedActivity = [
+          ...projects.slice(0, 2).map((p: any) => ({
+            time: new Date(p.createdAt || Date.now()).toLocaleDateString(),
+            msg: `New property '${p.title}' added to Projects.`,
+            type: "Project",
+            color: "bg-[#711113]"
+          })),
+          ...blogs.slice(0, 1).map((b: any) => ({
+            time: new Date(b.createdAt || Date.now()).toLocaleDateString(),
+            msg: `Blog post '${b.title}' published.`,
+            type: "Blog",
+            color: "bg-[#29B1D2]"
+          })),
+          ...leads.slice(0, 1).map((l: any) => ({
+            time: "Recently",
+            msg: `New inquiry received from ${l.name}.`,
+            type: "Leads",
+            color: "bg-amber-400"
+          }))
+        ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
+
+        setActivityFeed(combinedActivity.length > 0 ? combinedActivity : [
+          { time: "Now", msg: "Dashboard is live and monitoring your platform.", type: "System", color: "bg-emerald-400" }
+        ]);
+
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -69,6 +101,14 @@ export default function DashboardPage() {
 
     fetchDashboardData();
   }, []);
+
+  // Calculate current requests to show
+  const currentRequests = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return allLeads.slice(startIndex, startIndex + itemsPerPage);
+  }, [allLeads, currentPage]);
+
+  const totalPages = Math.ceil(allLeads.length / itemsPerPage);
 
   return (
     <motion.div
@@ -90,19 +130,19 @@ export default function DashboardPage() {
         </motion.div>
 
         <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-2.5">
-          <button className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-bold text-gray-700 hover:bg-gray-50 hover:border-[#29B1D2] transition-all flex items-center justify-center gap-2 shadow-sm">
+          <Link href="/admin/projects" className="flex-1 md:flex-none px-4 py-2 bg-white border border-gray-200 rounded-lg text-[11px] font-bold text-gray-700 hover:bg-gray-50 hover:border-[#29B1D2] transition-all flex items-center justify-center gap-2 shadow-sm">
             <Plus size={16} /> New Project
-          </button>
-          <button className="flex-1 md:flex-none px-4 py-2 bg-[#711113] text-white rounded-lg text-[11px] font-bold hover:bg-[#5a0d0e] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#711113]/20">
+          </Link>
+          <a href="https://sankalpconstructions.com" target="_blank" className="flex-1 md:flex-none px-4 py-2 bg-[#711113] text-white rounded-lg text-[11px] font-bold hover:bg-[#5a0d0e] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#711113]/20">
             Live Site <ExternalLink size={14} />
-          </button>
+          </a>
         </motion.div>
       </section>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {isLoading ? (
-          [...Array(4)].map((_, i) => (
+          [...Array(3)].map((_, i) => (
             <div key={i} className="h-32 bg-white rounded-2xl border border-gray-100 animate-pulse" />
           ))
         ) : (
@@ -119,11 +159,8 @@ export default function DashboardPage() {
                 <div className={`p-2.5 rounded-xl ${stat.bg} ${stat.color} shadow-sm group-hover:scale-105 transition-transform duration-300`}>
                   <stat.icon size={18} strokeWidth={2.5} />
                 </div>
-                <div className={`flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border ${stat.trendType === 'up' ? 'text-emerald-600 bg-emerald-50 border-emerald-100' :
-                  stat.trendType === 'down' ? 'text-rose-600 bg-rose-50 border-rose-100' :
-                    'text-amber-600 bg-amber-50 border-amber-100'
-                  }`}>
-                  {stat.trendType === 'up' ? <TrendingUp size={10} /> : stat.trendType === 'down' ? <TrendingDown size={10} /> : null}
+                <div className="flex items-center gap-1 text-[9px] font-bold px-2 py-0.5 rounded-full border text-amber-600 bg-amber-50 border-amber-100">
+                  <TrendingUp size={10} />
                   <span>{stat.trend.split(' ')[0]}</span>
                 </div>
               </div>
@@ -153,9 +190,9 @@ export default function DashboardPage() {
               </h2>
               <p className="text-[10px] text-gray-400 mt-0.5">Real-time leads from the website.</p>
             </div>
-            <button className="group text-[#29B1D2] text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:gap-2 transition-all">
+            <Link href="/admin/contacts" className="group text-[#29B1D2] text-[9px] font-bold uppercase tracking-widest flex items-center gap-1.5 hover:gap-2 transition-all">
               View All Hub <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform" />
-            </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto">
@@ -177,7 +214,7 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                 ) : (
-                  recentRequests.map((req) => (
+                  currentRequests.map((req) => (
                     <tr key={req._id || req.id} className="hover:bg-gray-50/80 transition-colors group">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -189,14 +226,14 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <p className="text-xs font-bold text-gray-900 mb-0.5">{req.name}</p>
-                            <p className="text-[9px] text-gray-400 font-medium">{req.email}</p>
+                            <p className="text-[9px] text-gray-400 font-medium">{req.email || req.phone}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 hidden sm:table-cell">
                         <div className="flex items-center gap-1.5">
                           <div className="w-1 h-1 rounded-full bg-[#711113]"></div>
-                          <span className="text-[11px] font-bold text-gray-600 transition-colors group-hover:text-[#711113]">{req.project}</span>
+                          <span className="text-[11px] font-bold text-gray-600 transition-colors group-hover:text-[#711113]">{req.project || "General Inquiry"}</span>
                         </div>
                         <p className="text-[8px] text-gray-400 mt-0.5 uppercase font-bold tracking-tight">{req.date || req.time}</p>
                       </td>
@@ -209,14 +246,14 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-100 text-gray-400 hover:text-[#711113] hover:border-[#711113]/20 hover:shadow-md transition-all">
+                        <Link href="/admin/contacts" className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-gray-100 text-gray-400 hover:text-[#711113] hover:border-[#711113]/20 hover:shadow-md transition-all">
                           <ArrowUpRight size={16} />
-                        </button>
+                        </Link>
                       </td>
                     </tr>
                   ))
                 )}
-                {!isLoading && recentRequests.length === 0 && (
+                {!isLoading && currentRequests.length === 0 && (
                   <tr>
                     <td colSpan={4} className="px-6 py-10 text-center text-gray-400 text-[10px] uppercase font-bold tracking-widest">No recent inquiries.</td>
                   </tr>
@@ -227,10 +264,24 @@ export default function DashboardPage() {
 
           <div className="p-5 md:p-6 bg-gray-50/50 border-t border-gray-100 mt-auto">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <p className="text-[10px] text-gray-400 font-medium">Showing 3 of 158 new inquiries.</p>
+              <p className="text-[10px] text-gray-400 font-medium tracking-wide">
+                Showing {currentRequests.length} of {allLeads.length} new inquiries.
+              </p>
               <div className="flex gap-2">
-                <button className="px-3 py-1.5 text-[10px] font-bold text-gray-400 hover:text-gray-900 transition-colors">Previous</button>
-                <button className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-900 shadow-sm">Next</button>
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className="px-3 py-1.5 text-[10px] font-bold text-gray-400 hover:text-gray-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button 
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-900 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
@@ -239,7 +290,7 @@ export default function DashboardPage() {
         {/* Activity Timeline Section */}
         <motion.div
           variants={itemVariants}
-          className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.04)] p-5 md:p-6 hover:shadow-[0_20px_60px_-10px_rgba(0,0,0,0.06)] transition-all duration-500"
+          className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.04)] p-5 md:p-6 hover:shadow-[0_20px_60px_-10_rgba(0,0,0,0.06)] transition-all duration-500 flex flex-col h-full"
         >
           <div className="mb-6">
             <h2 className="font-black text-gray-900 text-base flex items-center gap-2">
@@ -248,13 +299,8 @@ export default function DashboardPage() {
             <p className="text-[10px] text-gray-400 mt-0.5">Platform activity log.</p>
           </div>
 
-          <div className="space-y-6 relative before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
-            {[
-              { time: "10:30 AM", msg: "New property 'Sankalp Aura' added to Projects.", type: "Project", color: "bg-[#711113]" },
-              { time: "Yesterday", msg: "Blog post 'Market Trends 2025' published.", type: "Blog", color: "bg-[#29B1D2]" },
-              { time: "2 days ago", msg: "Updated amenities icon for Yoga Zone.", type: "Amenity", color: "bg-amber-400" },
-              { time: "4 days ago", msg: "New team member 'Karthik Raja' joined.", type: "Team", color: "bg-emerald-400" }
-            ].map((item, idx) => (
+          <div className="flex-1 space-y-6 relative before:absolute before:left-[9px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
+            {activityFeed.map((item, idx) => (
               <div key={idx} className="flex gap-4 relative group">
                 <div className={`w-5 h-5 rounded-full ${item.color} border-4 border-white shadow-sm z-10 shrink-0 mt-0.5 transition-transform group-hover:scale-110`}></div>
                 <div>
@@ -270,10 +316,6 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-
-          <button className="w-full mt-8 py-3 bg-gray-50 text-gray-500 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] hover:bg-[#711113] hover:text-white hover:shadow-lg hover:shadow-[#711113]/20 transition-all duration-300">
-            Explore Full Log
-          </button>
         </motion.div>
       </div>
     </motion.div>

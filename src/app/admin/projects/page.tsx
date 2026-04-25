@@ -2,6 +2,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, Check, AlertCircle, Image as ImageIcon, MapPin, AlignLeft, Layers, ArrowLeft, Building2, ChevronRight, ChevronLeft, List, IndianRupee, Sparkles, Map, Navigation, X, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
+import { deleteFromImageKit, uploadToImageKit } from "@/lib/imagekit-client";
+import toast from "react-hot-toast";
+
 
 export default function ProjectsAdminPage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -9,6 +13,7 @@ export default function ProjectsAdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
+
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
@@ -117,8 +122,9 @@ export default function ProjectsAdminPage() {
         const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
         if (res.ok) {
           setProjects(projects.filter(p => (p._id || p.id) !== id));
+          toast.success("Project deleted successfully");
         } else {
-          alert("Failed to delete project");
+          toast.error("Failed to delete project");
         }
       } catch (error) {
         console.error("Error deleting project:", error);
@@ -146,6 +152,7 @@ export default function ProjectsAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setProjects(projects.map(p => (p._id || p.id) === id ? updated : p));
+          toast.success("Project updated successfully!");
         }
       } else {
         const res = await fetch("/api/projects", {
@@ -156,12 +163,13 @@ export default function ProjectsAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setProjects([created, ...projects]);
+          toast.success("Project published successfully!");
         }
       }
       setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving project:", error);
-      alert("Failed to save project");
+      toast.error("Failed to save project");
     }
   };
 
@@ -169,27 +177,27 @@ export default function ProjectsAdminPage() {
     if (activeTab === 0) {
       const validBanners = formData.banners.filter(b => b.trim() !== "");
       if (!formData.title || !formData.location || !formData.type || !formData.description || validBanners.length === 0) {
-        alert("Please fill out all required fields (Title, Location, Type, Description) and provide at least 1 Banner Image before continuing.");
+        toast.error("Please fill out all required fields and provide at least 1 Banner Image.");
         return false;
       }
     }
     if (activeTab === 1) {
       const validHighlights = formData.highlights.filter(h => h.trim() !== "");
       if (validHighlights.length === 0) {
-        alert("Please add at least one highlight.");
+        toast.error("Please add at least one highlight.");
         return false;
       }
     }
     if (activeTab === 2) {
       const validConfigs = formData.priceConfigurations.filter(c => c.configuration && c.carpetArea && c.price);
       if (formData.priceConfigurations.length === 0 || validConfigs.length !== formData.priceConfigurations.length) {
-         alert("Please ensure all added pricing configuration rows are completely filled, or remove any empty rows. Minimum 1 valid configuration is required.");
+         toast.error("Please ensure all added pricing rows are filled. Minimum 1 configuration required.");
          return false;
       }
     }
     if (activeTab === 3) {
       if (formData.amenities.length === 0) {
-        alert("Please select or add at least one amenity.");
+        toast.error("Please select or add at least one amenity.");
         return false;
       }
     }
@@ -451,49 +459,14 @@ export default function ProjectsAdminPage() {
                           </select>
                         </div>
                       </div>
-                      <div className="w-full">
-                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Banner Images (Max 3) *</label>
-                        <div className="p-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center text-center gap-3 hover:border-[#29B1D2] transition-colors group">
-                          <div className="p-3 bg-white rounded-full shadow-sm text-[#29B1D2] group-hover:scale-110 transition-transform">
-                            <ImageIcon size={20} />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold text-gray-700">Upload Banner Images</p>
-                            <p className="text-[10px] text-gray-400 mt-1">Supported: JPG, PNG, WEBP (Up to 3 images)</p>
-                          </div>
-                          <input type="file" accept="image/*" multiple className="hidden" id="banner-upload" onChange={(e) => {
-                              if (e.target.files) {
-                                  const files = Array.from(e.target.files);
-                                  const existingBanners = formData.banners.filter(b => b.trim() !== "");
-                                  const availableSlots = 3 - existingBanners.length;
-                                  const toAdd = files.slice(0, availableSlots).map(f => URL.createObjectURL(f));
-                                  setFormData({...formData, banners: [...existingBanners, ...toAdd]});
-                              }
-                          }} />
-                          <label htmlFor="banner-upload" className="mt-1 px-4 py-1.5 bg-white border border-gray-200 font-bold uppercase text-[10px] tracking-widest text-gray-600 rounded-lg shadow-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
-                            Browse Files
-                          </label>
-                        </div>
-                        
-                        {formData.banners.filter(b => b.trim() !== "").length > 0 && (
-                          <div className="flex flex-wrap gap-4 mt-4">
-                            {formData.banners.filter(b => b.trim() !== "").map((banner, idx) => (
-                              <div key={idx} className="relative w-32 h-20 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                                 <img src={banner} className="w-full h-full object-cover" />
-                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                   <button type="button" onClick={() => {
-                                      const newBanners = formData.banners.filter(b => b.trim() !== "").filter((_, i) => i !== idx);
-                                      if (newBanners.length === 0) newBanners.push("");
-                                      setFormData({...formData, banners: newBanners});
-                                   }} className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors">
-                                      <Trash2 size={14} />
-                                   </button>
-                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <ImageUpload 
+                        label="Banner Images (Max 3) *" 
+                        value={formData.banners} 
+                        onChange={(urls) => setFormData({ ...formData, banners: urls as string[] })} 
+                        multiple={true}
+                        maxFiles={3}
+                      />
+
                       <div>
                         <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Full Description *</label>
                         <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 resize-none transition-all leading-relaxed" placeholder="Write a comprehensive description of the property..."></textarea>
@@ -643,11 +616,14 @@ export default function ProjectsAdminPage() {
                           <div>
                             <p className="text-xs font-bold text-gray-700">Upload PDF Brochure</p>
                           </div>
-                          <input type="file" accept=".pdf" className="hidden" id="brochure-upload" onChange={(e) => {
-                             if (e.target.files) {
+                          <input type="file" accept=".pdf" className="hidden" id="brochure-upload" onChange={async (e) => {
+                             if (e.target.files && e.target.files[0]) {
                                const file = e.target.files[0];
-                               if (file) {
-                                 setFormData({...formData, brochures: [{name: file.name, url: URL.createObjectURL(file)}]});
+                               try {
+                                 const url = await uploadToImageKit(file);
+                                 setFormData({...formData, brochures: [{name: file.name, url}]});
+                               } catch (err) {
+                                 toast.error("Failed to upload brochure");
                                }
                              }
                           }} />
@@ -661,87 +637,34 @@ export default function ProjectsAdminPage() {
                                <div key={idx} className="flex justify-between items-center bg-indigo-50 border border-indigo-100 p-3 rounded-lg shadow-sm">
                                  <span className="text-xs font-bold text-indigo-700 truncate w-3/4">{doc.name}</span>
                                  <button type="button" onClick={() => {
+                                    if (doc.url) deleteFromImageKit(doc.url);
                                     setFormData({...formData, brochures: formData.brochures.filter((_, i) => i !== idx)});
                                  }} className="text-indigo-400 hover:text-red-500 transition-colors"><Trash2 size={14}/></button>
-                               </div>
+                                </div>
                              ))}
                           </div>
                         )}
                       </div>
 
                       {/* Floor Plans Upload */}
-                      <div className="md:col-span-1">
-                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1 block">Project Floor Plans</h3>
-                        <div className="p-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center text-center gap-3 hover:border-blue-300 transition-colors group">
-                          <div className="p-3 bg-white rounded-full shadow-sm text-blue-500 group-hover:scale-110 transition-transform">
-                            <Map size={20} />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold text-gray-700">Upload Plans (Images)</p>
-                          </div>
-                          <input type="file" accept="image/*" multiple className="hidden" id="plan-upload" onChange={(e) => {
-                             if (e.target.files) {
-                               const files = Array.from(e.target.files);
-                               const toAdd = files.map(f => URL.createObjectURL(f));
-                               setFormData({...formData, floorPlans: [...formData.floorPlans, ...toAdd]});
-                             }
-                          }} />
-                          <label htmlFor="plan-upload" className="mt-1 px-4 py-1.5 bg-white border border-gray-200 font-bold uppercase text-[10px] tracking-widest text-gray-600 rounded-lg shadow-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
-                            Browse Files
-                          </label>
-                        </div>
-                        {formData.floorPlans.length > 0 && (
-                          <div className="flex flex-wrap gap-3 mt-4">
-                            {formData.floorPlans.map((plan, idx) => (
-                              <div key={idx} className="relative w-[calc(50%-6px)] aspect-[4/3] rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                                 <img src={plan} className="w-full h-full object-cover" />
-                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                   <button type="button" onClick={() => {
-                                      setFormData({...formData, floorPlans: formData.floorPlans.filter((_, i) => i !== idx)});
-                                   }} className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"><Trash2 size={14} /></button>
-                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <ImageUpload 
+                        label="Project Floor Plans" 
+                        value={formData.floorPlans} 
+                        onChange={(urls) => setFormData({ ...formData, floorPlans: urls as string[] })} 
+                        multiple={true}
+                        maxFiles={10}
+                      />
+
 
                       {/* Gallery Upload */}
-                      <div className="md:col-span-1">
-                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1 block">Visual Tour Images</h3>
-                        <div className="p-6 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 flex flex-col items-center justify-center text-center gap-3 hover:border-rose-300 transition-colors group">
-                          <div className="p-3 bg-white rounded-full shadow-sm text-rose-500 group-hover:scale-110 transition-transform">
-                            <ImageIcon size={20} />
-                          </div>
-                          <div>
-                            <p className="text-xs font-bold text-gray-700">Upload Gallery Images</p>
-                          </div>
-                          <input type="file" accept="image/*" multiple className="hidden" id="gallery-upload" onChange={(e) => {
-                             if (e.target.files) {
-                               const files = Array.from(e.target.files);
-                               const toAdd = files.map(f => URL.createObjectURL(f));
-                               setFormData({...formData, gallery: [...formData.gallery, ...toAdd]});
-                             }
-                          }} />
-                          <label htmlFor="gallery-upload" className="mt-1 px-4 py-1.5 bg-white border border-gray-200 font-bold uppercase text-[10px] tracking-widest text-gray-600 rounded-lg shadow-sm cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all">
-                            Browse Files
-                          </label>
-                        </div>
-                        {formData.gallery.length > 0 && (
-                          <div className="flex flex-wrap gap-3 mt-4">
-                            {formData.gallery.map((img, idx) => (
-                              <div key={idx} className="relative w-[calc(50%-6px)] aspect-[4/3] rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                                 <img src={img} className="w-full h-full object-cover" />
-                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                   <button type="button" onClick={() => {
-                                      setFormData({...formData, gallery: formData.gallery.filter((_, i) => i !== idx)});
-                                   }} className="p-1.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"><Trash2 size={14} /></button>
-                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <ImageUpload 
+                        label="Visual Tour Images" 
+                        value={formData.gallery} 
+                        onChange={(urls) => setFormData({ ...formData, gallery: urls as string[] })} 
+                        multiple={true}
+                        maxFiles={20}
+                      />
+
                     </div>
                   </motion.div>
                 )}
@@ -760,7 +683,12 @@ export default function ProjectsAdminPage() {
                     <div className="space-y-6">
                       <div>
                          <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Google Maps Embed URL</label>
-                         <input className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm font-mono" placeholder="<iframe src='...' />" />
+                         <input 
+                           value={formData.mapSrc || ""} 
+                           onChange={(e) => setFormData({...formData, mapSrc: e.target.value})}
+                           className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm font-mono" 
+                           placeholder="&lt;iframe src='...' /&gt;" 
+                         />
                       </div>
 
                       <div>

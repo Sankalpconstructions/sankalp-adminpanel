@@ -8,9 +8,9 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const { id, password } = await req.json(); // keeping "id" as parameter name since frontend sends "id"
-
+    console.log("hello", id, password)
     const admin = await AdminUser.findOne({ email: id });
-    
+
     if (!admin) {
       return NextResponse.json(
         { error: "Invalid Email or Password. Please try again." },
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const isMatch = await bcrypt.compare(password, admin.password!);
-    
+
     if (!isMatch) {
       return NextResponse.json(
         { error: "Invalid Email or Password. Please try again." },
@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
+    console.error("[login] Error:", error.message);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", detail: error.message },
       { status: 500 }
     );
   }

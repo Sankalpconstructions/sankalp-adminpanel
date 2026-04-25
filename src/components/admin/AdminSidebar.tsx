@@ -27,7 +27,7 @@ import { motion } from "framer-motion";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard" },
-  { name: "About", icon: Info, href: "/admin/about" },
+  { name: "Brand Story", icon: Sparkles, href: "/admin/brand-story" },
   { name: "Projects", icon: Building2, href: "/admin/projects" },
   { name: "CSR", icon: HeartHandshake, href: "/admin/csr" },
   { name: "Blog Posts", icon: Newspaper, href: "/admin/blog" },

@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, X, Check, ImageIcon, Tag, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
+
 
 type GalleryItem = { id: number; title: string; category: string; image: string; project: string };
 const categories = ["Interior", "Exterior", "Amenities", "Construction", "Events"];
@@ -15,6 +17,7 @@ export default function GalleryAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+
 
   const fetchGallery = useCallback(async () => {
     setIsLoading(true);
@@ -182,11 +185,12 @@ export default function GalleryAdminPage() {
                     </select>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Image URL</label>
-                  <input required value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="https://images.unsplash.com/..." />
-                  {formData.image && <img src={formData.image} alt="preview" className="w-full h-32 object-cover rounded-xl mt-2" />}
-                </div>
+                <ImageUpload 
+                  label="Gallery Photo" 
+                  value={formData.image} 
+                  onChange={(url) => setFormData({ ...formData, image: url as string })} 
+                />
+
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Associated Project</label>
                   <input value={formData.project} onChange={e => setFormData({ ...formData, project: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="e.g. Sankalp Heights" />

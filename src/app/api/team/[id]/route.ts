@@ -1,35 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
-import Team from "@/models/Team";
+import TeamMember from "@/models/TeamMember";
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
     const { id } = await params;
     const data = await req.json();
-    const { _id, ...rest } = data;
-    const teamMember = await Team.findByIdAndUpdate(id, rest, { new: true });
-    if (!teamMember) return NextResponse.json({ error: "Team member not found" }, { status: 404 });
-    return NextResponse.json(teamMember);
+    const member = await TeamMember.findByIdAndUpdate(id, data, { new: true });
+    return NextResponse.json(member, { headers: corsHeaders });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
     const { id } = await params;
-    const teamMember = await Team.findByIdAndDelete(id);
-    if (!teamMember) return NextResponse.json({ error: "Team member not found" }, { status: 404 });
-    return NextResponse.json({ message: "Team member deleted" });
+    await TeamMember.findByIdAndDelete(id);
+    return NextResponse.json({ message: "Deleted successfully" }, { headers: corsHeaders });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 }

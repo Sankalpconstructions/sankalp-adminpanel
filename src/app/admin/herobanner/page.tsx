@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, X, Check, Layers, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
+
 
 type Slide = { id: number; title: string; subtitle: string; description: string; image: string; ctaText: string; isActive: boolean };
 const emptyForm = { title: "", subtitle: "", description: "", image: "", ctaText: "Explore Now", isActive: true };
@@ -216,11 +218,12 @@ export default function HeroBannerAdminPage() {
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Description</label>
                   <textarea rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none" placeholder="Short compelling description for this slide..." />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Background Image URL</label>
-                  <input required value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="https://images.unsplash.com/..." />
-                  {formData.image && <img src={formData.image} alt="preview" className="w-full h-28 object-cover rounded-xl" />}
-                </div>
+                <ImageUpload 
+                  label="Background Image" 
+                  value={formData.image} 
+                  onChange={(url) => setFormData({ ...formData, image: url as string })} 
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">CTA Button Text</label>
