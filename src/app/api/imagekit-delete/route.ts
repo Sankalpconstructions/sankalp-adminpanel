@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import ImageKit from "@imagekit/nodejs";
 
 const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "",
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
-  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
 });
 
 export async function POST(req: Request) {
@@ -20,16 +18,16 @@ export async function POST(req: Request) {
     const urlParts = imageUrl.split("/");
     const fileName = urlParts[urlParts.length - 1];
 
-    // Search for the file to get its fileId
-    const files = await imagekit.files.list({
-      name: fileName,
+    // Search for the asset to get its fileId
+    const files = await imagekit.assets.list({
+      searchQuery: `name="${fileName}"`,
     });
 
     // Find the exact match in case multiple files have the same name
     const fileToDelete = files.find((f: any) => f.url === imageUrl);
 
     if (fileToDelete) {
-      await imagekit.files.delete(fileToDelete.fileId);
+      await imagekit.files.delete((fileToDelete as any).fileId);
       return NextResponse.json({ success: true, message: "Image deleted from ImageKit" });
     }
 

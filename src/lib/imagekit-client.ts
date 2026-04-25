@@ -21,7 +21,7 @@ export const uploadToImageKit = async (file: File): Promise<string> => {
       useUniqueFileName: true,
     });
 
-    return result.url;
+    return result.url || "";
   } catch (error) {
     console.error("ImageKit upload error:", error);
     throw error;

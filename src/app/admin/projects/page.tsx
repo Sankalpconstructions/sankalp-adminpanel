@@ -63,7 +63,8 @@ export default function ProjectsAdminPage() {
     landmarks: [] as { type: string; text: string }[],
     brochures: [] as {name: string, url: string}[],
     floorPlans: [] as string[],
-    gallery: [] as string[]
+    gallery: [] as string[],
+    mapSrc: ""
   });
 
   const [customAmenityText, setCustomAmenityText] = useState("");
@@ -94,6 +95,7 @@ export default function ProjectsAdminPage() {
         brochures: project.brochures || [],
         floorPlans: project.floorPlans || [],
         gallery: project.gallery || [],
+        mapSrc: project.mapSrc || "",
         status: project.status || "Ongoing", 
         amenitiesCount: "10+", 
         priceStarting: project.priceStarting || "Price on Request" 
@@ -110,7 +112,8 @@ export default function ProjectsAdminPage() {
         landmarks: [],
         brochures: [],
         floorPlans: [],
-        gallery: []
+        gallery: [],
+        mapSrc: ""
       });
     }
     setIsFormOpen(true);

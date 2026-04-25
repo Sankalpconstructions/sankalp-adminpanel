@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       // Security transformation for the public list view
       const secureProjects = projects.map(project => {
         const p = project.toObject();
-        p.floorPlansCount = p.floorPlans?.length || 0;
+        (p as any).floorPlansCount = p.floorPlans?.length || 0;
         p.floorPlans = [];
         p.priceStarting = "Price on Request";
         if (p.priceConfigurations) {
