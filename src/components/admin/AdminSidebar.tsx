@@ -20,7 +20,10 @@ import {
   Info,
   HeartHandshake,
   Layout,
-  Star
+  Star,
+  Home,
+  Store,
+  FileText
 } from "lucide-react";
 import { useAdmin } from "./AdminContext";
 import { motion } from "framer-motion";
@@ -32,9 +35,12 @@ const menuItems = [
   { name: "CSR", icon: HeartHandshake, href: "/admin/csr" },
   { name: "Blog Posts", icon: Newspaper, href: "/admin/blog" },
   { name: "Contact Hub", icon: Mail, href: "/admin/contacts" },
+  { name: "Rental Residential", icon: Home, href: "/admin/rental-residential" },
+  { name: "Rental Commercial", icon: Store, href: "/admin/rental-commercial" },
 ];
 
 const contentItems = [
+  { name: "About Content", icon: FileText, href: "/admin/about" },
   { name: "Hero Banner", icon: Layers, href: "/admin/herobanner" },
   { name: "Testimonials", icon: Quote, href: "/admin/testimonials" },
   { name: "Gallery", icon: ImageIcon, href: "/admin/gallery" },
