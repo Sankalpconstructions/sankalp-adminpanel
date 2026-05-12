@@ -31,7 +31,7 @@ export default function ProjectsAdminPage() {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
@@ -46,7 +46,7 @@ export default function ProjectsAdminPage() {
     { name: "Plans & Gallery", icon: Layers },
     { name: "Location", icon: MapPin }
   ];
-  
+
   // Comprehensive Form State
   const [formData, setFormData] = useState({
     title: "",
@@ -65,7 +65,7 @@ export default function ProjectsAdminPage() {
     priceConfigurations: [{ configuration: "", carpetArea: "", price: "" }],
     amenities: [] as string[],
     landmarks: [] as { type: string; text: string }[],
-    brochures: [] as {name: string, url: string}[],
+    brochures: [] as { name: string, url: string }[],
     floorPlans: [] as string[],
     gallery: [] as string[],
     mapSrc: ""
@@ -76,7 +76,7 @@ export default function ProjectsAdminPage() {
   const [landmarkText, setLandmarkText] = useState("");
   const [brochureUploading, setBrochureUploading] = useState(false);
 
-  const filteredProjects = projects.filter(p => 
+  const filteredProjects = projects.filter(p =>
     (p.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
     (p.location?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
@@ -90,8 +90,8 @@ export default function ProjectsAdminPage() {
     setLandmarkText("");
     if (project) {
       setEditingProject(project);
-      setFormData({ 
-        ...project, 
+      setFormData({
+        ...project,
         banners: project.banners || [project.image || ""],
         highlights: project.highlights || [""],
         priceConfigurations: project.priceConfigurations || [{ configuration: "", carpetArea: "", price: "" }],
@@ -101,14 +101,14 @@ export default function ProjectsAdminPage() {
         floorPlans: project.floorPlans || [],
         gallery: project.gallery || [],
         mapSrc: project.mapSrc || "",
-        status: project.status || "Ongoing", 
-        amenitiesCount: "10+", 
-        priceStarting: project.priceStarting || "Price on Request" 
+        status: project.status || "Ongoing",
+        amenitiesCount: "10+",
+        priceStarting: project.priceStarting || "Price on Request"
       });
     } else {
       setEditingProject(null);
-      setFormData({ 
-        title: "", location: "", type: "", description: "", 
+      setFormData({
+        title: "", location: "", type: "", description: "",
         possessionDate: "",
         totalFloors: "",
         totalUnits: "",
@@ -203,8 +203,8 @@ export default function ProjectsAdminPage() {
     if (activeTab === 2) {
       const validConfigs = formData.priceConfigurations.filter(c => c.configuration && c.carpetArea && c.price);
       if (formData.priceConfigurations.length === 0 || validConfigs.length !== formData.priceConfigurations.length) {
-         toast.error("Please ensure all added pricing rows are filled. Minimum 1 configuration required.");
-         return false;
+        toast.error("Please ensure all added pricing rows are filled. Minimum 1 configuration required.");
+        return false;
       }
     }
     if (activeTab === 3) {
@@ -229,34 +229,34 @@ export default function ProjectsAdminPage() {
   const handleHighlightChange = (idx: number, val: string) => {
     const newH = [...formData.highlights];
     newH[idx] = val;
-    setFormData({...formData, highlights: newH});
+    setFormData({ ...formData, highlights: newH });
   };
-  const addHighlight = () => setFormData({...formData, highlights: [...formData.highlights, ""]});
+  const addHighlight = () => setFormData({ ...formData, highlights: [...formData.highlights, ""] });
 
   const handlePriceConfigChange = (idx: number, field: string, val: string) => {
     const newC = [...formData.priceConfigurations];
     newC[idx] = { ...newC[idx], [field]: val };
-    setFormData({...formData, priceConfigurations: newC});
+    setFormData({ ...formData, priceConfigurations: newC });
   };
-  const addPriceConfig = () => setFormData({...formData, priceConfigurations: [...formData.priceConfigurations, { configuration: "", carpetArea: "", price: "" }]});
+  const addPriceConfig = () => setFormData({ ...formData, priceConfigurations: [...formData.priceConfigurations, { configuration: "", carpetArea: "", price: "" }] });
   const removePriceConfig = (idx: number) => {
     const newC = formData.priceConfigurations.filter((_, i) => i !== idx);
-    setFormData({...formData, priceConfigurations: newC});
+    setFormData({ ...formData, priceConfigurations: newC });
   };
 
   const toggleAmenity = (amenity: string) => {
     const exists = formData.amenities.includes(amenity);
     if (exists) {
-      setFormData({...formData, amenities: formData.amenities.filter(a => a !== amenity)});
+      setFormData({ ...formData, amenities: formData.amenities.filter(a => a !== amenity) });
     } else {
-      setFormData({...formData, amenities: [...formData.amenities, amenity]});
+      setFormData({ ...formData, amenities: [...formData.amenities, amenity] });
     }
   };
 
   const addCustomAmenity = () => {
     if (customAmenityText.trim()) {
       if (!formData.amenities.includes(customAmenityText.trim())) {
-        setFormData({...formData, amenities: [...formData.amenities, customAmenityText.trim()]});
+        setFormData({ ...formData, amenities: [...formData.amenities, customAmenityText.trim()] });
       }
       setCustomAmenityText("");
     }
@@ -264,13 +264,13 @@ export default function ProjectsAdminPage() {
 
   const addLandmark = () => {
     if (landmarkText.trim()) {
-      setFormData({...formData, landmarks: [...formData.landmarks, { type: landmarkType, text: landmarkText.trim() }]});
+      setFormData({ ...formData, landmarks: [...formData.landmarks, { type: landmarkType, text: landmarkText.trim() }] });
       setLandmarkText("");
     }
   };
   const removeLandmark = (idx: number) => {
     const newL = formData.landmarks.filter((_, i) => i !== idx);
-    setFormData({...formData, landmarks: newL});
+    setFormData({ ...formData, landmarks: newL });
   };
 
   const standardAmenitiesList = ['Clubhouse', 'Swimming Pool', 'Gymnasium', 'Kids Play Area', 'Yoga Deck', 'Jogging Track', 'Security 24x7', 'Power Backup'];
@@ -293,9 +293,9 @@ export default function ProjectsAdminPage() {
             <div className="bg-white p-4 rounded-2xl border border-gray-200/50 shadow-sm flex flex-col md:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search by name or location..." 
+                <input
+                  type="text"
+                  placeholder="Search by name or location..."
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value);
@@ -305,7 +305,7 @@ export default function ProjectsAdminPage() {
                 />
               </div>
               <div className="flex gap-2">
-                 <span className="bg-gray-50 text-gray-400 border border-gray-100 px-4 py-2 rounded-xl text-xs font-bold uppercase">Total: {filteredProjects.length}</span>
+                <span className="bg-gray-50 text-gray-400 border border-gray-100 px-4 py-2 rounded-xl text-xs font-bold uppercase">Total: {filteredProjects.length}</span>
               </div>
             </div>
 
@@ -352,7 +352,7 @@ export default function ProjectsAdminPage() {
                       </div>
                     </motion.div>
                   ))}
-                  
+
                   {paginatedProjects.length === 0 && (
                     <div className="col-span-1 md:col-span-2 lg:col-span-3 py-16 text-center text-gray-400">
                       <Building2 size={48} className="mx-auto mb-4 opacity-20" />
@@ -383,9 +383,9 @@ export default function ProjectsAdminPage() {
         ) : (
           <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6 pb-20 max-w-5xl mx-auto">
             <div className="flex items-center gap-4 mb-2">
-              <button 
+              <button
                 onClick={() => {
-                  if(confirm("Are you sure you want to go back? Unsaved progress will be lost.")) setIsFormOpen(false)
+                  if (confirm("Are you sure you want to go back? Unsaved progress will be lost.")) setIsFormOpen(false)
                 }}
                 className="p-2 bg-white border border-gray-200/50 rounded-xl text-gray-500 hover:text-[#711113] hover:bg-rose-50 transition-all shadow-sm shrink-0"
               >
@@ -406,21 +406,20 @@ export default function ProjectsAdminPage() {
                   const isCompleted = activeTab > idx;
                   return (
                     <div key={idx} className="flex flex-col items-center bg-white px-2 cursor-default">
-                       <button
-                         onClick={() => {
-                           if(isCompleted) setActiveTab(idx);
-                         }}
-                         className={`w-10 h-10 pos-relative rounded-full flex items-center justify-center font-bold text-xs transition-all ${
-                           isActive ? 'bg-[#711113] text-white shadow-lg shadow-[#711113]/30 scale-110' 
-                           : isCompleted ? 'bg-emerald-500 text-white border-2 border-white cursor-pointer hover:bg-emerald-600' 
-                           : 'bg-white border-2 border-gray-200 text-gray-400 cursor-not-allowed'
-                         }`}
-                       >
-                         {isCompleted ? <Check size={16}/> : idx + 1}
-                       </button>
-                       <span className={`text-[9px] font-bold uppercase tracking-widest mt-3 transition-colors ${isActive ? 'text-[#711113]' : 'text-gray-400'}`}>
-                         {tab.name}
-                       </span>
+                      <button
+                        onClick={() => {
+                          if (isCompleted) setActiveTab(idx);
+                        }}
+                        className={`w-10 h-10 pos-relative rounded-full flex items-center justify-center font-bold text-xs transition-all ${isActive ? 'bg-[#711113] text-white shadow-lg shadow-[#711113]/30 scale-110'
+                          : isCompleted ? 'bg-emerald-500 text-white border-2 border-white cursor-pointer hover:bg-emerald-600'
+                            : 'bg-white border-2 border-gray-200 text-gray-400 cursor-not-allowed'
+                          }`}
+                      >
+                        {isCompleted ? <Check size={16} /> : idx + 1}
+                      </button>
+                      <span className={`text-[9px] font-bold uppercase tracking-widest mt-3 transition-colors ${isActive ? 'text-[#711113]' : 'text-gray-400'}`}>
+                        {tab.name}
+                      </span>
                     </div>
                   );
                 })}
@@ -428,13 +427,13 @@ export default function ProjectsAdminPage() {
             </div>
 
             <div className="sm:hidden bg-white p-4 rounded-xl border border-gray-200/50 mb-4 flex justify-between items-center text-xs font-bold uppercase tracking-widest">
-               <span className="text-gray-400">Step {activeTab + 1} of {tabNames.length}</span>
-               <span className="text-[#711113]">{tabNames[activeTab].name}</span>
+              <span className="text-gray-400">Step {activeTab + 1} of {tabNames.length}</span>
+              <span className="text-[#711113]">{tabNames[activeTab].name}</span>
             </div>
 
             <div className="space-y-6">
               <form className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 md:p-10 min-h-[400px]">
-                
+
                 {/* TAB 1: OVERVIEW */}
                 {activeTab === 0 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
@@ -445,31 +444,31 @@ export default function ProjectsAdminPage() {
                         <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Basic Property Information</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-6">
                       <div>
                         <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Project Title *</label>
-                        <input required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all font-bold text-gray-900" placeholder="e.g. Sankalp Heights Premium" />
+                        <input required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all font-bold text-gray-900" placeholder="e.g. Sankalp Heights Premium" />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Location *</label>
-                          <input required value={formData.location} onChange={(e) => setFormData({...formData, location: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all" placeholder="e.g. Wakad, Pune" />
+                          <input required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all" placeholder="e.g. Wakad, Pune" />
                         </div>
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Property Type *</label>
-                          <select required value={formData.type} onChange={(e) => setFormData({...formData, type: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all text-gray-700 font-bold">
+                          <select required value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all text-gray-700 font-bold">
                             <option value="">Select Type...</option>
-                            <option value="Residential">Residential</option>
+                            <option value="Apartment">Apartment</option>
                             <option value="Commercial">Commercial</option>
-                            <option value="Mixed Use">Mixed Use</option>
+                            <option value="Villa">Villa</option>
                           </select>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Project Status *</label>
-                          <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all text-gray-700">
+                          <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all text-gray-700">
                             <option value="Upcoming">Upcoming (Coming Soon)</option>
                             <option value="Ongoing">Ongoing (Under Construction)</option>
                             <option value="Completed">Completed (Ready to Move)</option>
@@ -480,35 +479,35 @@ export default function ProjectsAdminPage() {
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Possession</label>
-                          <input value={formData.possessionDate} onChange={(e) => setFormData({...formData, possessionDate: e.target.value})} placeholder="e.g. Dec 2026 / Q4 2026" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                          <input value={formData.possessionDate} onChange={(e) => setFormData({ ...formData, possessionDate: e.target.value })} placeholder="e.g. Dec 2026 / Q4 2026" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
                         </div>
 
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Total Floors</label>
-                          <input value={formData.totalFloors} onChange={(e) => setFormData({...formData, totalFloors: e.target.value})} placeholder="e.g. 12" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                          <input value={formData.totalFloors} onChange={(e) => setFormData({ ...formData, totalFloors: e.target.value })} placeholder="e.g. 12" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
                         </div>
 
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Total Units</label>
-                          <input value={formData.totalUnits} onChange={(e) => setFormData({...formData, totalUnits: e.target.value})} placeholder="e.g. 96" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                          <input value={formData.totalUnits} onChange={(e) => setFormData({ ...formData, totalUnits: e.target.value })} placeholder="e.g. 96" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
                         </div>
 
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">RERA ID</label>
-                          <input value={formData.rera} onChange={(e) => setFormData({...formData, rera: e.target.value})} placeholder="e.g. P52100000000" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                          <input value={formData.rera} onChange={(e) => setFormData({ ...formData, rera: e.target.value })} placeholder="e.g. P52100000000" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
                         </div>
                       </div>
-                      <ImageUpload 
-                        label="Banner Images (Max 3) *" 
-                        value={formData.banners} 
-                        onChange={(urls) => setFormData({ ...formData, banners: urls as string[] })} 
+                      <ImageUpload
+                        label="Banner Images (Max 3) *"
+                        value={formData.banners}
+                        onChange={(urls) => setFormData({ ...formData, banners: urls as string[] })}
                         multiple={true}
                         maxFiles={3}
                       />
 
                       <div>
                         <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Full Description *</label>
-                        <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 resize-none transition-all leading-relaxed" placeholder="Write a comprehensive description of the property..."></textarea>
+                        <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 resize-none transition-all leading-relaxed" placeholder="Write a comprehensive description of the property..."></textarea>
                       </div>
                     </div>
                   </motion.div>
@@ -524,7 +523,7 @@ export default function ProjectsAdminPage() {
                         <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-1">Unique Selling Points</p>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-4">
                       {formData.highlights.map((highlight, idx) => (
                         <div key={idx} className="flex gap-4">
@@ -603,10 +602,10 @@ export default function ProjectsAdminPage() {
                         <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1 block">Standard Amenities</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           {standardAmenitiesList.map((amenity, i) => (
-                             <label key={i} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${formData.amenities.includes(amenity) ? 'border-[#29B1D2] bg-[#29B1D2]/5 text-[#29B1D2]' : 'border-gray-200 hover:border-[#29B1D2] text-gray-700'}`}>
-                               <input type="checkbox" checked={formData.amenities.includes(amenity)} onChange={() => toggleAmenity(amenity)} className="hidden" />
-                               <span className="text-xs font-bold">{amenity}</span>
-                             </label>
+                            <label key={i} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${formData.amenities.includes(amenity) ? 'border-[#29B1D2] bg-[#29B1D2]/5 text-[#29B1D2]' : 'border-gray-200 hover:border-[#29B1D2] text-gray-700'}`}>
+                              <input type="checkbox" checked={formData.amenities.includes(amenity)} onChange={() => toggleAmenity(amenity)} className="hidden" />
+                              <span className="text-xs font-bold">{amenity}</span>
+                            </label>
                           ))}
                         </div>
                       </div>
@@ -620,12 +619,12 @@ export default function ProjectsAdminPage() {
 
                         {formData.amenities.filter(a => !standardAmenitiesList.includes(a)).length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                             {formData.amenities.filter(a => !standardAmenitiesList.includes(a)).map((customAmenity, i) => (
-                               <div key={i} className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
-                                 <span className="text-xs font-bold text-gray-700">{customAmenity}</span>
-                                 <button type="button" onClick={() => toggleAmenity(customAmenity)} className="text-gray-400 hover:text-rose-500"><X size={14} /></button>
-                               </div>
-                             ))}
+                            {formData.amenities.filter(a => !standardAmenitiesList.includes(a)).map((customAmenity, i) => (
+                              <div key={i} className="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2 rounded-lg">
+                                <span className="text-xs font-bold text-gray-700">{customAmenity}</span>
+                                <button type="button" onClick={() => toggleAmenity(customAmenity)} className="text-gray-400 hover:text-rose-500"><X size={14} /></button>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -656,31 +655,31 @@ export default function ProjectsAdminPage() {
                             <p className="text-xs font-bold text-gray-700">Upload PDF Brochure</p>
                           </div>
                           <input type="file" accept=".pdf" className="hidden" id="brochure-upload" disabled={brochureUploading} onChange={async (e) => {
-                             if (e.target.files && e.target.files[0]) {
-                               const file = e.target.files[0];
-                               setBrochureUploading(true);
-                               try {
-                                 const url = await uploadToImageKit(file);
-                                 console.log('Brochure uploaded, url:', url);
-                                 if (!url) {
-                                   toast.error('Brochure upload returned empty URL');
-                                 } else {
-                                   toast.success('Brochure uploaded');
-                                 }
-                                 setFormData({...formData, brochures: [{name: file.name, url}]});
-                               } catch (err: unknown) {
-  console.error('Brochure upload failed:', err);
+                            if (e.target.files && e.target.files[0]) {
+                              const file = e.target.files[0];
+                              setBrochureUploading(true);
+                              try {
+                                const url = await uploadToImageKit(file);
+                                console.log('Brochure uploaded, url:', url);
+                                if (!url) {
+                                  toast.error('Brochure upload returned empty URL');
+                                } else {
+                                  toast.success('Brochure uploaded');
+                                }
+                                setFormData({ ...formData, brochures: [{ name: file.name, url }] });
+                              } catch (err: unknown) {
+                                console.error('Brochure upload failed:', err);
 
-  const message =
-    err instanceof Error
-      ? err.message
-      : 'network error';
+                                const message =
+                                  err instanceof Error
+                                    ? err.message
+                                    : 'network error';
 
-  toast.error("Failed to upload brochure: " + message);
-} finally {
-                                 setBrochureUploading(false);
-                               }
-                             }
+                                toast.error("Failed to upload brochure: " + message);
+                              } finally {
+                                setBrochureUploading(false);
+                              }
+                            }
                           }} />
                           <label htmlFor="brochure-upload" className={`mt-1 px-4 py-1.5 ${brochureUploading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 cursor-pointer'} border border-gray-200 font-bold uppercase text-[10px] tracking-widest rounded-lg shadow-sm hover:${brochureUploading ? '' : 'bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200'} transition-all`}>
                             {brochureUploading ? 'Uploading...' : 'Browse File'}
@@ -689,34 +688,34 @@ export default function ProjectsAdminPage() {
                         </div>
                         {formData.brochures.length > 0 && (
                           <div className="mt-4 flex flex-col gap-2">
-                             {formData.brochures.map((doc, idx) => (
-                               <div key={idx} className="flex justify-between items-center bg-indigo-50 border border-indigo-100 p-3 rounded-lg shadow-sm">
-                                 <span className="text-xs font-bold text-indigo-700 truncate w-3/4">{doc.name}</span>
-                                 <button type="button" onClick={() => {
-                                    if (doc.url) deleteFromImageKit(doc.url);
-                                    setFormData({...formData, brochures: formData.brochures.filter((_, i) => i !== idx)});
-                                 }} className="text-indigo-400 hover:text-red-500 transition-colors"><Trash2 size={14}/></button>
-                                </div>
-                             ))}
+                            {formData.brochures.map((doc, idx) => (
+                              <div key={idx} className="flex justify-between items-center bg-indigo-50 border border-indigo-100 p-3 rounded-lg shadow-sm">
+                                <span className="text-xs font-bold text-indigo-700 truncate w-3/4">{doc.name}</span>
+                                <button type="button" onClick={() => {
+                                  if (doc.url) deleteFromImageKit(doc.url);
+                                  setFormData({ ...formData, brochures: formData.brochures.filter((_, i) => i !== idx) });
+                                }} className="text-indigo-400 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
 
                       {/* Floor Plans Upload */}
-                      <ImageUpload 
-                        label="Project Floor Plans" 
-                        value={formData.floorPlans} 
-                        onChange={(urls) => setFormData({ ...formData, floorPlans: urls as string[] })} 
+                      <ImageUpload
+                        label="Project Floor Plans"
+                        value={formData.floorPlans}
+                        onChange={(urls) => setFormData({ ...formData, floorPlans: urls as string[] })}
                         multiple={true}
                         maxFiles={10}
                       />
 
 
                       {/* Gallery Upload */}
-                      <ImageUpload 
-                        label="Visual Tour Images" 
-                        value={formData.gallery} 
-                        onChange={(urls) => setFormData({ ...formData, gallery: urls as string[] })} 
+                      <ImageUpload
+                        label="Visual Tour Images"
+                        value={formData.gallery}
+                        onChange={(urls) => setFormData({ ...formData, gallery: urls as string[] })}
                         multiple={true}
                         maxFiles={20}
                       />
@@ -738,13 +737,13 @@ export default function ProjectsAdminPage() {
 
                     <div className="space-y-6">
                       <div>
-                         <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Google Maps Embed URL</label>
-                         <input 
-                           value={formData.mapSrc || ""} 
-                           onChange={(e) => setFormData({...formData, mapSrc: e.target.value})}
-                           className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm font-mono" 
-                           placeholder="&lt;iframe src='...' /&gt;" 
-                         />
+                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Google Maps Embed URL</label>
+                        <input
+                          value={formData.mapSrc || ""}
+                          onChange={(e) => setFormData({ ...formData, mapSrc: e.target.value })}
+                          className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm font-mono"
+                          placeholder="&lt;iframe src='...' /&gt;"
+                        />
                       </div>
 
                       <div>
@@ -759,18 +758,18 @@ export default function ProjectsAdminPage() {
                           <input type="text" value={landmarkText} onChange={e => setLandmarkText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLandmark())} className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 text-sm" placeholder="e.g. Global International School - 2km" />
                           <button type="button" onClick={addLandmark} className="px-6 py-4 bg-blue-600 text-white rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-colors w-full md:w-auto">Add Landmark</button>
                         </div>
-                        
+
                         {formData.landmarks.length > 0 && (
                           <div className="border border-gray-100 rounded-xl bg-gray-50/50 p-2 space-y-2">
-                             {formData.landmarks.map((lm, i) => (
-                               <div key={i} className="flex justify-between items-center bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
-                                 <div className="flex flex-col">
-                                   <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{lm.type}</span>
-                                   <span className="text-sm font-bold text-gray-800">{lm.text}</span>
-                                 </div>
-                                 <button type="button" onClick={() => removeLandmark(i)} className="text-gray-400 hover:text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors"><Trash2 size={16}/></button>
-                               </div>
-                             ))}
+                            {formData.landmarks.map((lm, i) => (
+                              <div key={i} className="flex justify-between items-center bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
+                                <div className="flex flex-col">
+                                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{lm.type}</span>
+                                  <span className="text-sm font-bold text-gray-800">{lm.text}</span>
+                                </div>
+                                <button type="button" onClick={() => removeLandmark(i)} className="text-gray-400 hover:text-rose-500 hover:bg-rose-50 p-2 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                              </div>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -784,7 +783,7 @@ export default function ProjectsAdminPage() {
                 <button type="button" onClick={prevTab} disabled={activeTab === 0} className="flex items-center gap-2 px-6 py-3.5 bg-white border border-gray-200/50 rounded-xl font-bold uppercase tracking-widest text-[#711113] hover:bg-gray-50 disabled:opacity-0 transition-opacity shadow-sm">
                   <ArrowLeft size={16} /> <span className="hidden sm:inline">Back</span>
                 </button>
-                
+
                 {activeTab < tabNames.length - 1 ? (
                   <button type="button" onClick={nextTab} className="flex items-center gap-2 px-8 py-3.5 bg-emerald-600 text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 ml-auto">
                     Save & Continue <ChevronRight size={16} />
