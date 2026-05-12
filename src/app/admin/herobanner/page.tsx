@@ -54,7 +54,7 @@ export default function HeroBannerAdminPage() {
   const toggleActive = async (id: string) => {
     const slide = slides.find(s => (s._id || s.id) === id);
     if (!slide) return;
-    
+
     const updatedSlide = { ...slide, isActive: !slide.isActive };
     try {
       const res = await fetch(`/api/herobanners/${id}`, {
@@ -138,7 +138,7 @@ export default function HeroBannerAdminPage() {
                         <span className="bg-black/40 backdrop-blur text-white text-[10px] px-2 py-1 rounded font-bold">Slide {idx + 1}</span>
                       </div>
                     </div>
-    
+
                     {/* Content */}
                     <div className="flex-1 p-6 flex flex-col justify-between">
                       <div>
@@ -166,7 +166,7 @@ export default function HeroBannerAdminPage() {
                           </span>
                         </div>
                       </div>
-    
+
                       <div className="flex gap-3 mt-5 pt-4 border-t border-gray-50">
                         <button onClick={() => handleOpenModal(slide)} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 font-bold text-xs uppercase rounded-xl hover:bg-blue-600 hover:text-white transition-all">
                           <Edit2 size={14} /> Edit Slide
@@ -189,7 +189,6 @@ export default function HeroBannerAdminPage() {
           )}
         </AnimatePresence>
       </div>
-创新
 
       <AnimatePresence>
         {isModalOpen && (
@@ -218,10 +217,10 @@ export default function HeroBannerAdminPage() {
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Description</label>
                   <textarea rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none" placeholder="Short compelling description for this slide..." />
                 </div>
-                <ImageUpload 
-                  label="Background Image" 
-                  value={formData.image} 
-                  onChange={(url) => setFormData({ ...formData, image: url as string })} 
+                <ImageUpload
+                  label="Background Image"
+                  value={formData.image}
+                  onChange={(url) => setFormData({ ...formData, image: url as string })}
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
