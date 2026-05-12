@@ -1,29 +1,31 @@
-import { upload } from "@imagekit/javascript";
-
-const publicKey = process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "";
+const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result as string;
+    const comma = dataUrl.indexOf(',');
+    resolve(dataUrl.slice(comma + 1));
+  };
+  reader.onerror = (e) => reject(e);
+  reader.readAsDataURL(file);
+});
 
 export const uploadToImageKit = async (file: File): Promise<string> => {
   try {
-    // 1. Get authentication parameters from our backend
-    const authRes = await fetch("/api/imagekit-auth");
-    if (!authRes.ok) throw new Error("Failed to get ImageKit authentication");
-    
-    const authData = await authRes.json();
-
-    // 2. Perform the upload using the functional upload API (v5+)
-    const result = await upload({
-      file,
-      fileName: file.name,
-      publicKey,
-      signature: authData.signature,
-      expire: authData.expire,
-      token: authData.token,
-      useUniqueFileName: true,
+    // Convert file to base64 and send to our server to avoid CORS
+    const base64 = await toBase64(file);
+    const res = await fetch('/api/imagekit-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName: file.name, base64 }),
     });
-
-    return result.url || "";
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error('Server upload failed: ' + txt);
+    }
+    const data = await res.json();
+    return data.url || data.filePath || '';
   } catch (error) {
-    console.error("ImageKit upload error:", error);
+    console.error('ImageKit upload (server fallback) error:', error);
     throw error;
   }
 };

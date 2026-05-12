@@ -53,6 +53,10 @@ export default function ProjectsAdminPage() {
     location: "",
     type: "",
     description: "",
+    possessionDate: "",
+    totalFloors: "",
+    totalUnits: "",
+    rera: "",
     status: "Upcoming",
     amenitiesCount: "",
     priceStarting: "",
@@ -70,6 +74,7 @@ export default function ProjectsAdminPage() {
   const [customAmenityText, setCustomAmenityText] = useState("");
   const [landmarkType, setLandmarkType] = useState("School/College");
   const [landmarkText, setLandmarkText] = useState("");
+  const [brochureUploading, setBrochureUploading] = useState(false);
 
   const filteredProjects = projects.filter(p => 
     (p.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
@@ -104,6 +109,10 @@ export default function ProjectsAdminPage() {
       setEditingProject(null);
       setFormData({ 
         title: "", location: "", type: "", description: "", 
+        possessionDate: "",
+        totalFloors: "",
+        totalUnits: "",
+        rera: "",
         status: "Upcoming", amenitiesCount: "", priceStarting: "",
         banners: [""],
         highlights: [""],
@@ -312,6 +321,11 @@ export default function ProjectsAdminPage() {
                     <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} key={project._id || project.id} className="bg-white rounded-2xl border border-gray-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden group hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all flex flex-col">
                       <div className="h-48 relative overflow-hidden shrink-0">
                         <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <div className="absolute top-4 left-4 flex gap-2">
+                          <span className={`text-[10px] font-bold uppercase px-3 py-1 rounded-full ${project.status === 'Ongoing' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : project.status === 'Completed' ? 'bg-gray-100 text-gray-700 border border-gray-200' : 'bg-amber-50 text-amber-700 border border-amber-100'}`}>
+                            {project.status || 'N/A'}
+                          </span>
+                        </div>
                         <div className="absolute top-4 right-4 flex gap-2">
                           <button onClick={() => handleOpenForm(project)} className="p-2 bg-white/90 backdrop-blur text-blue-600 rounded-lg shadow-lg hover:bg-blue-600 hover:text-white transition-all transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
                             <Edit2 size={16} />
@@ -460,6 +474,28 @@ export default function ProjectsAdminPage() {
                             <option value="Ongoing">Ongoing (Under Construction)</option>
                             <option value="Completed">Completed (Ready to Move)</option>
                           </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Possession</label>
+                          <input value={formData.possessionDate} onChange={(e) => setFormData({...formData, possessionDate: e.target.value})} placeholder="e.g. Dec 2026 / Q4 2026" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Total Floors</label>
+                          <input value={formData.totalFloors} onChange={(e) => setFormData({...formData, totalFloors: e.target.value})} placeholder="e.g. 12" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Total Units</label>
+                          <input value={formData.totalUnits} onChange={(e) => setFormData({...formData, totalUnits: e.target.value})} placeholder="e.g. 96" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">RERA ID</label>
+                          <input value={formData.rera} onChange={(e) => setFormData({...formData, rera: e.target.value})} placeholder="e.g. P52100000000" className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" />
                         </div>
                       </div>
                       <ImageUpload 
@@ -619,20 +655,31 @@ export default function ProjectsAdminPage() {
                           <div>
                             <p className="text-xs font-bold text-gray-700">Upload PDF Brochure</p>
                           </div>
-                          <input type="file" accept=".pdf" className="hidden" id="brochure-upload" onChange={async (e) => {
+                          <input type="file" accept=".pdf" className="hidden" id="brochure-upload" disabled={brochureUploading} onChange={async (e) => {
                              if (e.target.files && e.target.files[0]) {
                                const file = e.target.files[0];
+                               setBrochureUploading(true);
                                try {
                                  const url = await uploadToImageKit(file);
+                                 console.log('Brochure uploaded, url:', url);
+                                 if (!url) {
+                                   toast.error('Brochure upload returned empty URL');
+                                 } else {
+                                   toast.success('Brochure uploaded');
+                                 }
                                  setFormData({...formData, brochures: [{name: file.name, url}]});
                                } catch (err) {
-                                 toast.error("Failed to upload brochure");
+                                 console.error('Brochure upload failed:', err);
+                                 toast.error("Failed to upload brochure: " + (err?.message || 'network error'));
+                               } finally {
+                                 setBrochureUploading(false);
                                }
                              }
                           }} />
-                          <label htmlFor="brochure-upload" className="mt-1 px-4 py-1.5 bg-white border border-gray-200 font-bold uppercase text-[10px] tracking-widest text-gray-600 rounded-lg shadow-sm cursor-pointer hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all">
-                            Browse File
+                          <label htmlFor="brochure-upload" className={`mt-1 px-4 py-1.5 ${brochureUploading ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 cursor-pointer'} border border-gray-200 font-bold uppercase text-[10px] tracking-widest rounded-lg shadow-sm hover:${brochureUploading ? '' : 'bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200'} transition-all`}>
+                            {brochureUploading ? 'Uploading...' : 'Browse File'}
                           </label>
+                          {brochureUploading && <div className="mt-3 text-xs text-gray-500">Uploading brochure, please wait...</div>}
                         </div>
                         {formData.brochures.length > 0 && (
                           <div className="mt-4 flex flex-col gap-2">

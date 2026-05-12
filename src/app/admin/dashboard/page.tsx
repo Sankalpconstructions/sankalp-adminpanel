@@ -57,7 +57,7 @@ export default function DashboardPage() {
         const blogs = blogsRes.ok ? await blogsRes.json() : [];
         const leads = leadsRes.ok ? await leadsRes.json() : [];
 
-        const newLeads = leads.filter((l: any) => l.status === "New");
+        const newLeads = leads.filter((l: any) => l.status);
         setAllLeads(leads);
 
         setStats([
@@ -238,8 +238,8 @@ export default function DashboardPage() {
                         <p className="text-[8px] text-gray-400 mt-0.5 uppercase font-bold tracking-tight">{req.date || req.time}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${req.status === 'New' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                          req.status === 'Follow-up' ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${((req.status || "").toLowerCase() === 'new') ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                          ((req.status || "").toLowerCase() === 'follow-up') ? 'bg-blue-50 text-blue-600 border border-blue-100' :
                             'bg-emerald-50 text-emerald-600 border border-emerald-100'
                           }`}>
                           {req.status}

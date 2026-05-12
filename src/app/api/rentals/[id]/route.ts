@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import connectToDatabase from '@/lib/mongodb';
+import connectDB from '@/lib/db';
 import RentalProperty from '@/models/RentalProperty';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
-    await connectToDatabase();
+    await connectDB();
     const property = await RentalProperty.findById(params.id);
     if (!property) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
@@ -19,7 +19,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const body = await request.json();
-    await connectToDatabase();
+    await connectDB();
     const updatedProperty = await RentalProperty.findByIdAndUpdate(params.id, body, { new: true });
     if (!updatedProperty) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    await connectToDatabase();
+    await connectDB();
     const deletedProperty = await RentalProperty.findByIdAndDelete(params.id);
     if (!deletedProperty) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });

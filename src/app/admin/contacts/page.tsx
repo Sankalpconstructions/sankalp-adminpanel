@@ -48,7 +48,7 @@ export default function ContactsAdminPage() {
     const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          l.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          l.phone.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "All" || l.status === statusFilter;
+    const matchesStatus = statusFilter === "All" || ((l.status || "").toLowerCase() === statusFilter.toLowerCase());
     const matchesProject = projectFilter === "All" || l.project === projectFilter;
     return matchesSearch && matchesStatus && matchesProject;
   });
@@ -253,9 +253,9 @@ export default function ContactsAdminPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <div className={`w-2 h-2 rounded-full ${
-                              lead.status === 'New' ? 'bg-yellow-400 animate-pulse' :
-                              lead.status === 'Follow-up' ? 'bg-blue-400' :
-                              lead.status === 'Lost' ? 'bg-red-400' :
+                              ((lead.status || "").toLowerCase() === 'new') ? 'bg-yellow-400 animate-pulse' :
+                              ((lead.status || "").toLowerCase() === 'follow-up') ? 'bg-blue-400' :
+                              ((lead.status || "").toLowerCase() === 'lost') ? 'bg-red-400' :
                               'bg-green-400'
                             }`}></div>
                             <span className="text-[10px] font-bold uppercase text-gray-500 tracking-widest">{lead.status}</span>
@@ -361,25 +361,25 @@ export default function ContactsAdminPage() {
                  <div className="grid grid-cols-2 gap-2">
                     <button 
                       onClick={() => handleStatusClick('Follow-up')}
-                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${selectedLead.status === 'Follow-up' ? 'bg-blue-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${((selectedLead.status || "").toLowerCase() === 'follow-up') ? 'bg-blue-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <Clock size={12} /> Follow
                     </button>
                     <button 
                       onClick={() => handleStatusClick('Completed')}
-                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${selectedLead.status === 'Completed' ? 'bg-green-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${((selectedLead.status || "").toLowerCase() === 'completed') ? 'bg-green-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <CheckCircle size={12} /> Closed
                     </button>
                     <button 
                       onClick={() => handleStatusClick('Lost')}
-                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${selectedLead.status === 'Lost' ? 'bg-red-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${((selectedLead.status || "").toLowerCase() === 'lost') ? 'bg-red-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <X size={12} /> Lost
                     </button>
                     <button 
                       onClick={handleReset}
-                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${selectedLead.status === 'New' && (!selectedLead.history || selectedLead.history.length === 0) ? 'bg-yellow-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
+                      className={`py-2.5 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${((selectedLead.status || "").toLowerCase() === 'new') && (!selectedLead.history || selectedLead.history.length === 0) ? 'bg-yellow-400 text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                     >
                       <RefreshCw size={12} className={isUpdating ? 'animate-spin' : ''} /> Reset
                     </button>
@@ -417,9 +417,9 @@ export default function ContactsAdminPage() {
                        return (
                          <div key={idx} className="relative pl-6">
                            <div className={`absolute left-[-4px] top-1.5 w-2 h-2 rounded-full border-2 border-white ${
-                             item.status === 'New' ? 'bg-yellow-400' :
-                             item.status === 'Follow-up' ? 'bg-blue-400' :
-                             item.status === 'Lost' ? 'bg-red-400' :
+                             ((item.status || "").toLowerCase() === 'new') ? 'bg-yellow-400' :
+                             ((item.status || "").toLowerCase() === 'follow-up') ? 'bg-blue-400' :
+                             ((item.status || "").toLowerCase() === 'lost') ? 'bg-red-400' :
                              'bg-green-400'
                            }`}></div>
                            <div className="flex flex-col">

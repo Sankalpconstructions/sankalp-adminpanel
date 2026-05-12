@@ -50,10 +50,14 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const data = await req.json();
-    
+    // Debug: log whether brochures present in incoming payload
+    console.log('[API] POST /api/projects incoming brochures:', Array.isArray(data.brochures) ? data.brochures.length : 'none');
+
     // Remove temporary ID if present
     const { id, _id, ...rest } = data;
-    
+    // Ensure brochures array exists to avoid accidental omission
+    if (!rest.brochures) rest.brochures = [];
+
     const project = await Project.create(rest);
     return NextResponse.json(project, { status: 201, headers: corsHeaders });
   } catch (error: any) {

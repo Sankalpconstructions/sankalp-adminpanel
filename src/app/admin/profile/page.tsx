@@ -1,20 +1,64 @@
 "use client";
-import React, { useState } from "react";
-import { User, Mail, Shield, Camera, Edit3, Check, Globe, Layout, Palette, Save } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { User, Shield, Globe, Edit3, Check, Layout, Palette, Save } from "lucide-react";
 import { useAdmin } from "@/components/admin/AdminContext";
-import { motion } from "framer-motion";
+import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
 
 export default function AdminProfilePage() {
   const { logout } = useAdmin();
-  const [profile] = useState({
-    name: "Sankalp Super Admin",
-    email: "admin@sankalpconstructions.in",
+  const [profile, setProfile] = useState<any>({
+    name: "",
+    email: "",
     role: "System Administrator",
-    lastLogin: "Today, 09:30 AM",
-    avatar: ""
+    lastLogin: "",
+    avatar: "",
+    region: ""
   });
 
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/auth/profile');
+        if (res.ok) {
+          const data = await res.json();
+          const a = data.admin;
+          setProfile({
+            name: a.name || '',
+            email: a.email || '',
+            role: 'System Administrator',
+            lastLogin: a.lastLogin ? new Date(a.lastLogin).toLocaleString() : '',
+            avatar: a.photo || '',
+            region: a.region || ''
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load profile', err);
+      }
+    };
+    load();
+  }, []);
+
+  const onSave = async () => {
+    try {
+      const payload = { name: profile.name, photo: profile.avatar, email: profile.email, region: profile.region };
+      const res = await fetch('/api/auth/profile', { method: 'PUT', body: JSON.stringify(payload), headers: { 'Content-Type': 'application/json' } });
+      if (res.ok) {
+        const data = await res.json();
+        const a = data.admin;
+        setProfile((p:any) => ({ ...p, name: a.name || '', email: a.email || '', avatar: a.photo || '', region: a.region || '' }));
+        toast.success('Profile updated');
+      } else {
+        const err = await res.json();
+        toast.error(err?.error || 'Update failed');
+      }
+    } catch (err) {
+      console.error('Save profile failed', err);
+      toast.error('Save failed');
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -24,7 +68,10 @@ export default function AdminProfilePage() {
           <p className="text-gray-500 text-sm">Manage your account settings and regional preferences.</p>
         </div>
         <button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={async () => {
+            if (isEditing) await onSave();
+            setIsEditing(!isEditing);
+          }}
           className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all ${isEditing ? "bg-green-500 text-white shadow-lg shadow-green-500/20" : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
         >
@@ -40,19 +87,24 @@ export default function AdminProfilePage() {
             <div className="relative z-10">
               <div className="w-32 h-32 bg-white rounded-3xl mx-auto flex items-center justify-center text-[#711113] shadow-xl border-4 border-white overflow-hidden mb-4 group-hover:scale-105 transition-transform duration-500">
                 {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover" alt="avatar" /> : <User size={48} strokeWidth={1} />}
-                <button className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  <Camera size={24} />
-                </button>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">{profile.name}</h2>
+              <h2 className="text-xl font-bold text-gray-900">{profile.name || 'Admin'}</h2>
               <p className="text-xs font-bold text-[#29B1D2] uppercase tracking-widest mb-6">{profile.role}</p>
 
-              <div className="flex gap-2 justify-center">
+              <div className="w-full px-6">
+                <ImageUpload
+                  value={profile.avatar}
+                  onChange={(val) => setProfile((p:any) => ({ ...p, avatar: val }))}
+                  label="Profile Photo"
+                  multiple={false}
+                />
+              </div>
+              <div className="flex gap-2 justify-center mt-4">
                 <span className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-bold uppercase rounded-full border border-green-100 flex items-center gap-1">
                   <Shield size={10} /> Active
                 </span>
                 <span className="px-3 py-1 bg-gray-50 text-gray-400 text-[10px] font-bold uppercase rounded-full border border-gray-100 flex items-center gap-1">
-                  <Globe size={10} /> Pune HQ
+                  <Globe size={10} /> {profile.region || 'Pune HQ'}
                 </span>
               </div>
             </div>
@@ -66,7 +118,7 @@ export default function AdminProfilePage() {
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-500">Region</span>
-              <span className="font-bold text-gray-900 italic">Maharashtra, India</span>
+              <span className="font-bold text-gray-900 italic">{profile.region || 'Hyderabad, India'}</span>
             </div>
             <button
               onClick={logout}
@@ -90,16 +142,18 @@ export default function AdminProfilePage() {
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Full Name</label>
                   <input
                     disabled={!isEditing}
-                    defaultValue={profile.name}
+                    value={profile.name}
+                    onChange={(e) => setProfile((p:any) => ({ ...p, name: e.target.value }))}
                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] disabled:opacity-60"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Email Address</label>
                   <input
-                    disabled={!isEditing}
-                    defaultValue={profile.email}
-                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] disabled:opacity-60"
+                    // Allow editing email directly
+                    value={profile.email}
+                    onChange={(e) => setProfile((p:any) => ({ ...p, email: e.target.value }))}
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]"
                   />
                 </div>
               </div>
@@ -119,6 +173,22 @@ export default function AdminProfilePage() {
                     <span className="text-sm font-bold text-gray-700">Level 5 (Super User)</span>
                     <Check size={18} className="text-green-500" />
                   </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Last Login</label>
+                  <input disabled value={profile.lastLogin} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl opacity-60 italic" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Region</label>
+                  <input
+                    disabled={!isEditing}
+                    value={profile.region}
+                    onChange={(e) => setProfile((p:any) => ({ ...p, region: e.target.value }))}
+                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] disabled:opacity-60"
+                  />
                 </div>
               </div>
             </div>
