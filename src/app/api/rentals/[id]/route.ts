@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import RentalProperty from '@/models/RentalProperty';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
-    const property = await RentalProperty.findById(params.id);
+    const { id } = await params;
+    const property = await RentalProperty.findById(id);
     if (!property) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
@@ -16,11 +17,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const body = await request.json();
     await connectDB();
-    const updatedProperty = await RentalProperty.findByIdAndUpdate(params.id, body, { new: true });
+    const { id } = await params;
+    const updatedProperty = await RentalProperty.findByIdAndUpdate(id, body, { new: true });
     if (!updatedProperty) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
@@ -31,10 +33,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
-    const deletedProperty = await RentalProperty.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const deletedProperty = await RentalProperty.findByIdAndDelete(id);
     if (!deletedProperty) {
       return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }

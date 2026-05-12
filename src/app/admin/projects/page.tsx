@@ -668,10 +668,16 @@ export default function ProjectsAdminPage() {
                                    toast.success('Brochure uploaded');
                                  }
                                  setFormData({...formData, brochures: [{name: file.name, url}]});
-                               } catch (err) {
-                                 console.error('Brochure upload failed:', err);
-                                 toast.error("Failed to upload brochure: " + (err?.message || 'network error'));
-                               } finally {
+                               } catch (err: unknown) {
+  console.error('Brochure upload failed:', err);
+
+  const message =
+    err instanceof Error
+      ? err.message
+      : 'network error';
+
+  toast.error("Failed to upload brochure: " + message);
+} finally {
                                  setBrochureUploading(false);
                                }
                              }

@@ -57,7 +57,7 @@ export default function DashboardPage() {
         const blogs = blogsRes.ok ? await blogsRes.json() : [];
         const leads = leadsRes.ok ? await leadsRes.json() : [];
 
-        const newLeads = leads.filter((l: any) => l.status);
+        const newLeads = leads.filter((l: any) => ((l.status || "").toLowerCase() === "new"));
         setAllLeads(leads);
 
         setStats([
