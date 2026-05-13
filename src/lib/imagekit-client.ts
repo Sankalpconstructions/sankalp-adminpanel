@@ -10,24 +10,21 @@ const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
 });
 
 export const uploadToImageKit = async (file: File): Promise<string> => {
-  try {
-    // Convert file to base64 and send to our server to avoid CORS
-    const base64 = await toBase64(file);
-    const res = await fetch('/api/imagekit-upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName: file.name, base64 }),
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error('Server upload failed: ' + txt);
-    }
-    const data = await res.json();
-    return data.url || data.filePath || '';
-  } catch (error) {
-    console.error('ImageKit upload (server fallback) error:', error);
-    throw error;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("fileName", file.name);
+
+  const res = await fetch("/api/imagekit-upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Upload failed");
   }
+
+  const data = await res.json();
+  return data.url;
 };
 
 /**
