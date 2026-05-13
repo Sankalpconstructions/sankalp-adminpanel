@@ -1,58 +1,81 @@
-const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onload = () => {
-    const dataUrl = reader.result as string;
-    const comma = dataUrl.indexOf(',');
-    resolve(dataUrl.slice(comma + 1));
-  };
-  reader.onerror = (e) => reject(e);
-  reader.readAsDataURL(file);
-});
-
-// Improved Upload Function
+/**
+ * Upload Image to ImageKit with Detailed Frontend Logging
+ */
 export const uploadToImageKit = async (file: File): Promise<string> => {
   try {
+    console.log(`📤 [UPLOAD START] File: ${file.name}`);
+    console.log(`📊 Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB | Type: ${file.type}`);
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("fileName", file.name);
+
+    console.log("🚀 Sending request to /api/imagekit-upload...");
 
     const res = await fetch("/api/imagekit-upload", {
       method: "POST",
       body: formData,
     });
 
+    console.log(`📥 Response Status: ${res.status} ${res.statusText}`);
+
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || "Upload failed");
+      const errorText = await res.text();
+      let errorMsg = "Upload failed";
+
+      try {
+        const errorJson = JSON.parse(errorText);
+        errorMsg = errorJson.error || errorMsg;
+      } catch {
+        errorMsg = errorText.slice(0, 200);
+      }
+
+      console.error("❌ Upload Failed:", errorMsg);
+      throw new Error(errorMsg);
     }
 
     const data = await res.json();
+
+    console.log("✅ Upload Successful!");
+    console.log("🔗 Image URL:", data.url);
+
+    if (data.fileId) console.log("🆔 File ID:", data.fileId);
+
     return data.url;
 
   } catch (error: any) {
-    console.error("Upload failed:", error);
+    console.error("💥 Upload Exception:", error.message || error);
     throw new Error(error.message || "Failed to upload image");
   }
 };
 
 /**
- * Deletes an image from ImageKit via our backend API
+ * Delete Image from ImageKit
  */
 export const deleteFromImageKit = async (imageUrl: string): Promise<boolean> => {
   try {
     if (!imageUrl || !imageUrl.includes("imagekit.io")) {
-      return false; // Don't try to delete external/placeholder images
+      console.log("⏭️ Skipping delete - Not an ImageKit URL");
+      return false;
     }
-    
+
+    console.log("🗑️ Attempting to delete image...");
+
     const res = await fetch("/api/imagekit-delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageUrl }),
     });
-    
+
+    if (res.ok) {
+      console.log("✅ Image deleted successfully from ImageKit");
+    } else {
+      console.warn(`⚠️ Delete failed with status: ${res.status}`);
+    }
+
     return res.ok;
   } catch (error) {
-    console.error("Error calling delete API:", error);
+    console.error("❌ Error in deleteFromImageKit:", error);
     return false;
   }
 };
