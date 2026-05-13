@@ -1,51 +1,71 @@
 /**
- * Upload Image to ImageKit with Detailed Frontend Logging
+ * Upload Image to ImageKit with Automatic Compression
  */
 export const uploadToImageKit = async (file: File): Promise<string> => {
   try {
-    console.log(`📤 [UPLOAD START] File: ${file.name}`);
-    console.log(`📊 Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB | Type: ${file.type}`);
+    let fileToUpload = file;
+    console.log(`📤 Original: ${file.name} - ${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+
+    // Compress if file is larger than 2.5 MB
+    if (file.size > 2.5 * 1024 * 1024) {
+      console.log("🔄 Compressing image...");
+
+      const compressedFile = await compressImage(file);
+      fileToUpload = compressedFile;
+
+      console.log(`✅ Compressed to: ${(compressedFile.size / (1024 * 1024)).toFixed(2)} MB`);
+    }
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileName", file.name);
+    formData.append("file", fileToUpload);
+    formData.append("fileName", fileToUpload.name);
 
-    console.log("🚀 Sending request to /api/imagekit-upload...");
+    console.log("🚀 Sending to backend...");
 
     const res = await fetch("/api/imagekit-upload", {
       method: "POST",
       body: formData,
     });
 
-    console.log(`📥 Response Status: ${res.status} ${res.statusText}`);
-
     if (!res.ok) {
       const errorText = await res.text();
-      let errorMsg = "Upload failed";
-
+      let errorMsg = errorText.slice(0, 150);
       try {
-        const errorJson = JSON.parse(errorText);
-        errorMsg = errorJson.error || errorMsg;
-      } catch {
-        errorMsg = errorText.slice(0, 200);
-      }
-
+        const json = JSON.parse(errorText);
+        errorMsg = json.error || errorMsg;
+      } catch {}
+      
       console.error("❌ Upload Failed:", errorMsg);
       throw new Error(errorMsg);
     }
 
     const data = await res.json();
-
-    console.log("✅ Upload Successful!");
-    console.log("🔗 Image URL:", data.url);
-
-    if (data.fileId) console.log("🆔 File ID:", data.fileId);
-
+    console.log("✅ Upload Successful:", data.url);
     return data.url;
 
   } catch (error: any) {
-    console.error("💥 Upload Exception:", error.message || error);
+    console.error("💥 Upload Error:", error);
     throw new Error(error.message || "Failed to upload image");
+  }
+};
+
+/** Image Compression Helper */
+const compressImage = async (file: File): Promise<File> => {
+  // Dynamically import browser-image-compression
+  const imageCompression = (await import('browser-image-compression')).default;
+
+  const options = {
+    maxSizeMB: 2.0,           // Target max 2MB
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+    preserveExif: true,
+  };
+  
+  try {
+    return await imageCompression(file, options);
+  } catch (err) {
+    console.warn("Compression failed, using original file", err);
+    return file;
   }
 };
 
