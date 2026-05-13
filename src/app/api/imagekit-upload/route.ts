@@ -15,9 +15,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
 
     if (!privateKey) {
@@ -27,11 +24,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const uploadForm = new FormData();
-
-    uploadForm.append("file", buffer as any);
-    uploadForm.append("fileName", fileName || `upload_${Date.now()}`);
-    uploadForm.append("useUniqueFileName", "true");
+    // 🔥 Convert file to base64 (THIS IS THE FIX)
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64File = buffer.toString("base64");
 
     const uploadRes = await fetch(
       "https://upload.imagekit.io/api/v1/files/upload",
@@ -41,8 +37,13 @@ export async function POST(req: NextRequest) {
           Authorization:
             "Basic " +
             Buffer.from(`${privateKey}:`).toString("base64"),
+          "Content-Type": "application/json",
         },
-        body: uploadForm as any,
+        body: JSON.stringify({
+          file: base64File,
+          fileName: fileName || `upload_${Date.now()}`,
+          useUniqueFileName: true,
+        }),
       }
     );
 
