@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
       fullUrl: true,
     },
   },
+  compiler: {
+    removeConsole: {
+      exclude: ["error", "warn"], // keeps important logs
+    },
+  },
 };
 
 export default nextConfig;
