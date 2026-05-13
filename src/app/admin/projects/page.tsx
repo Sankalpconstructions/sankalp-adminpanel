@@ -31,7 +31,7 @@ export default function ProjectsAdminPage() {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
-
+console.log("Fetched Projects:", projects);
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
@@ -60,7 +60,7 @@ export default function ProjectsAdminPage() {
     status: "Upcoming",
     amenitiesCount: "",
     priceStarting: "",
-    banners: [""] as string[],
+    banners: [] as string[],
     highlights: [""] as string[],
     priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
     amenities: [] as string[],
@@ -83,7 +83,8 @@ export default function ProjectsAdminPage() {
 
   const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
+console.log("Filtered Projects:", filteredProjects);
+console.log("Paginated Projects:", paginatedProjects);
   const handleOpenForm = (project: any = null) => {
     setActiveTab(0);
     setCustomAmenityText("");
@@ -114,7 +115,7 @@ export default function ProjectsAdminPage() {
         totalUnits: "",
         rera: "",
         status: "Upcoming", amenitiesCount: "", priceStarting: "",
-        banners: [""],
+        banners: [],
         highlights: [""],
         priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
         amenities: [],
@@ -151,7 +152,7 @@ export default function ProjectsAdminPage() {
     try {
       const projectData = {
         ...formData,
-        image: formData.banners[0] || "",
+        image: formData.banners.filter(Boolean)[0] || "",
       };
 
       if (editingProject) {
@@ -479,7 +480,10 @@ export default function ProjectsAdminPage() {
                       <ImageUpload
                         label="Banner Images (Max 3) *"
                         value={formData.banners}
-                        onChange={(urls) => setFormData({ ...formData, banners: urls as string[] })}
+         onChange={(urls) => setFormData({
+  ...formData,
+  banners: urls.filter(Boolean)
+})}
                         multiple={true}
                         maxFiles={3}
                       />

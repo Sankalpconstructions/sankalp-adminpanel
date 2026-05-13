@@ -50,15 +50,15 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const data = await req.json();
-    // Debug: log whether brochures present in incoming payload
-    console.log('[API] POST /api/projects incoming brochures:', Array.isArray(data.brochures) ? data.brochures.length : 'none');
+const { id, _id, ...rest } = data;
 
-    // Remove temporary ID if present
-    const { id, _id, ...rest } = data;
-    // Ensure brochures array exists to avoid accidental omission
-    if (!rest.brochures) rest.brochures = [];
+rest.banners = (rest.banners || []).filter(Boolean);
 
-    const project = await Project.create(rest);
+// derive image ALWAYS from backend
+rest.image = rest.banners[0] || "";
+
+if (!rest.brochures) rest.brochures = [];
+const project = await Project.create(rest);
     return NextResponse.json(project, { status: 201, headers: corsHeaders });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
