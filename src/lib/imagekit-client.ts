@@ -1,24 +1,34 @@
 /**
- * Upload Image to ImageKit with Automatic Compression
+ * Upload Image to ImageKit with Compression
  */
 export const uploadToImageKit = async (file: File): Promise<string> => {
   try {
     let fileToUpload = file;
+
     console.log(`📤 Original: ${file.name} - ${(file.size / (1024 * 1024)).toFixed(2)} MB`);
 
-    // Compress if file is larger than 2.5 MB
+    // Compress if file is bigger than 2.5 MB
     if (file.size > 2.5 * 1024 * 1024) {
       console.log("🔄 Compressing image...");
 
-      const compressedFile = await compressImage(file);
+      const imageCompression = (await import('browser-image-compression')).default;
+
+      const options = {
+        maxSizeMB: 2.0,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        preserveExif: true,
+      };
+
+      const compressedFile = await imageCompression(file, options);
       fileToUpload = compressedFile;
 
-      console.log(`✅ Compressed to: ${(compressedFile.size / (1024 * 1024)).toFixed(2)} MB`);
+      console.log(`✅ Compressed: ${(compressedFile.size / (1024 * 1024)).toFixed(2)} MB`);
     }
 
     const formData = new FormData();
     formData.append("file", fileToUpload);
-    formData.append("fileName", fileToUpload.name);
+    formData.append("fileName", fileToUpload.name || file.name);
 
     console.log("🚀 Sending to backend...");
 
@@ -30,11 +40,12 @@ export const uploadToImageKit = async (file: File): Promise<string> => {
     if (!res.ok) {
       const errorText = await res.text();
       let errorMsg = errorText.slice(0, 150);
+
       try {
         const json = JSON.parse(errorText);
         errorMsg = json.error || errorMsg;
       } catch {}
-      
+
       console.error("❌ Upload Failed:", errorMsg);
       throw new Error(errorMsg);
     }
@@ -49,25 +60,7 @@ export const uploadToImageKit = async (file: File): Promise<string> => {
   }
 };
 
-/** Image Compression Helper */
-const compressImage = async (file: File): Promise<File> => {
-  // Dynamically import browser-image-compression
-  const imageCompression = (await import('browser-image-compression')).default;
 
-  const options = {
-    maxSizeMB: 2.0,           // Target max 2MB
-    maxWidthOrHeight: 1920,
-    useWebWorker: true,
-    preserveExif: true,
-  };
-  
-  try {
-    return await imageCompression(file, options);
-  } catch (err) {
-    console.warn("Compression failed, using original file", err);
-    return file;
-  }
-};
 
 /**
  * Delete Image from ImageKit
