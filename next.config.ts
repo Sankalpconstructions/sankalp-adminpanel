@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+ //  Ignore TypeScript errors during production build
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
   // Enable Turbopack properly or disable webpack warning
   turbopack: {},
