@@ -9,22 +9,30 @@ const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
+// Improved Upload Function
 export const uploadToImageKit = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("fileName", file.name);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", file.name);
 
-  const res = await fetch("/api/imagekit-upload", {
-    method: "POST",
-    body: formData,
-  });
+    const res = await fetch("/api/imagekit-upload", {
+      method: "POST",
+      body: formData,
+    });
 
-  if (!res.ok) {
-    throw new Error("Upload failed");
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || "Upload failed");
+    }
+
+    const data = await res.json();
+    return data.url;
+
+  } catch (error: any) {
+    console.error("Upload failed:", error);
+    throw new Error(error.message || "Failed to upload image");
   }
-
-  const data = await res.json();
-  return data.url;
 };
 
 /**
