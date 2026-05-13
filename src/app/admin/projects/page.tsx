@@ -62,7 +62,7 @@ export default function ProjectsAdminPage() {
     priceStarting: "",
     banners: [""] as string[],
     highlights: [""] as string[],
-    priceConfigurations: [{ configuration: "", carpetArea: "", price: "" }],
+    priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
     amenities: [] as string[],
     landmarks: [] as { type: string; text: string }[],
     brochures: [] as { name: string, url: string }[],
@@ -94,7 +94,7 @@ export default function ProjectsAdminPage() {
         ...project,
         banners: project.banners || [project.image || ""],
         highlights: project.highlights || [""],
-        priceConfigurations: project.priceConfigurations || [{ configuration: "", carpetArea: "", price: "" }],
+        priceConfigurations: project.priceConfigurations || [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
         amenities: project.amenities || [],
         landmarks: project.landmarks || [],
         brochures: project.brochures || [],
@@ -116,7 +116,7 @@ export default function ProjectsAdminPage() {
         status: "Upcoming", amenitiesCount: "", priceStarting: "",
         banners: [""],
         highlights: [""],
-        priceConfigurations: [{ configuration: "", carpetArea: "", price: "" }],
+        priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
         amenities: [],
         landmarks: [],
         brochures: [],
@@ -187,29 +187,8 @@ export default function ProjectsAdminPage() {
 
   const validateCurrentTab = (): boolean => {
     if (activeTab === 0) {
-      const validBanners = formData.banners.filter(b => b.trim() !== "");
-      if (!formData.title || !formData.location || !formData.type || !formData.description || validBanners.length === 0) {
-        toast.error("Please fill out all required fields and provide at least 1 Banner Image.");
-        return false;
-      }
-    }
-    if (activeTab === 1) {
-      const validHighlights = formData.highlights.filter(h => h.trim() !== "");
-      if (validHighlights.length === 0) {
-        toast.error("Please add at least one highlight.");
-        return false;
-      }
-    }
-    if (activeTab === 2) {
-      const validConfigs = formData.priceConfigurations.filter(c => c.configuration && c.carpetArea && c.price);
-      if (formData.priceConfigurations.length === 0 || validConfigs.length !== formData.priceConfigurations.length) {
-        toast.error("Please ensure all added pricing rows are filled. Minimum 1 configuration required.");
-        return false;
-      }
-    }
-    if (activeTab === 3) {
-      if (formData.amenities.length === 0) {
-        toast.error("Please select or add at least one amenity.");
+      if (!formData.title) {
+        toast.error("Please at least provide a project title.");
         return false;
       }
     }
@@ -238,7 +217,7 @@ export default function ProjectsAdminPage() {
     newC[idx] = { ...newC[idx], [field]: val };
     setFormData({ ...formData, priceConfigurations: newC });
   };
-  const addPriceConfig = () => setFormData({ ...formData, priceConfigurations: [...formData.priceConfigurations, { configuration: "", carpetArea: "", price: "" }] });
+  const addPriceConfig = () => setFormData({ ...formData, priceConfigurations: [...formData.priceConfigurations, { configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }] });
   const removePriceConfig = (idx: number) => {
     const newC = formData.priceConfigurations.filter((_, i) => i !== idx);
     setFormData({ ...formData, priceConfigurations: newC });
@@ -448,16 +427,16 @@ export default function ProjectsAdminPage() {
                     <div className="space-y-6">
                       <div>
                         <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Project Title *</label>
-                        <input required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all font-bold text-gray-900" placeholder="e.g. Sankalp Heights Premium" />
+                        <input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all font-bold text-gray-900" placeholder="e.g. Sankalp Heights Premium" />
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Location *</label>
-                          <input required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all" placeholder="e.g. Wakad, Pune" />
+                          <input value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all" placeholder="e.g. Wakad, Pune" />
                         </div>
                         <div>
                           <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Property Type *</label>
-                          <select required value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all text-gray-700 font-bold">
+                          <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 transition-all text-gray-700 font-bold">
                             <option value="">Select Type...</option>
                             <option value="Apartment">Apartment</option>
                             <option value="Commercial">Commercial</option>
@@ -507,7 +486,7 @@ export default function ProjectsAdminPage() {
 
                       <div>
                         <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">Full Description *</label>
-                        <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 resize-none transition-all leading-relaxed" placeholder="Write a comprehensive description of the property..."></textarea>
+                        <textarea rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] focus:ring-1 focus:ring-[#29B1D2]/20 resize-none transition-all leading-relaxed" placeholder="Write a comprehensive description of the property..."></textarea>
                       </div>
                     </div>
                   </motion.div>
@@ -558,6 +537,7 @@ export default function ProjectsAdminPage() {
                               <tr>
                                 <th className="p-4">Configuration</th>
                                 <th className="p-4">Carpet Area</th>
+                                <th className="p-4">Super Built-up Area</th>
                                 <th className="p-4">Price</th>
                                 <th className="p-4 text-right">Action</th>
                               </tr>
@@ -567,6 +547,7 @@ export default function ProjectsAdminPage() {
                                 <tr key={idx} className="hover:bg-gray-50/50">
                                   <td className="p-4"><input value={config.configuration} onChange={e => handlePriceConfigChange(idx, 'configuration', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 2 BHK Premium" /></td>
                                   <td className="p-4"><input value={config.carpetArea} onChange={e => handlePriceConfigChange(idx, 'carpetArea', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 750 sq.ft." /></td>
+                                  <td className="p-4"><input value={config.superBuiltUpArea} onChange={e => handlePriceConfigChange(idx, 'superBuiltUpArea', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 1050 sq.ft." /></td>
                                   <td className="p-4"><input value={config.price} onChange={e => handlePriceConfigChange(idx, 'price', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. ₹ 65 L" /></td>
                                   <td className="p-4 text-right">
                                     <button type="button" onClick={() => removePriceConfig(idx)} className="text-rose-500 hover:bg-rose-50 p-2.5 rounded-lg ml-auto block transition-colors border border-transparent hover:border-rose-100">

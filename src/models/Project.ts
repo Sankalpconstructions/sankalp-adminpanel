@@ -20,6 +20,7 @@ export interface IProject extends Document {
   priceConfigurations: {
     configuration: string;
     carpetArea: string;
+    superBuiltUpArea?: string;
     price: string;
   }[];
   amenities: string[];
@@ -57,6 +58,7 @@ const ProjectSchema: Schema = new Schema({
   priceConfigurations: [{
     configuration: { type: String },
     carpetArea: { type: String },
+    superBuiltUpArea: { type: String },
     price: { type: String }
   }],
   amenities: { type: [String], default: [] },
