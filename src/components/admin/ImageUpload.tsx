@@ -1,130 +1,119 @@
-import React, { useState } from "react";
-import { Image as ImageIcon, RefreshCw, X } from "lucide-react";
+"use client";
+import React, { useState, useEffect } from "react";
+import { Upload, X } from "lucide-react";
 import { uploadToImageKit, deleteFromImageKit } from "@/lib/imagekit-client";
 import toast from "react-hot-toast";
 
 interface ImageUploadProps {
-  value: string | string[];
-  onChange: (value: string | string[]) => void;
-  label?: string;
+  label: string;
+  value: string[];
+  onChange: (urls: string[]) => void;
   multiple?: boolean;
   maxFiles?: number;
-  className?: string;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({
-  value,
-  onChange,
+export default function ImageUpload({
   label,
+  value = [],
+  onChange,
   multiple = false,
   maxFiles = 5,
-  className = "",
-}) => {
+}: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<string[]>(value);
 
-  const onFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Sync preview when value changes from parent
+  useEffect(() => {
+    setPreviewUrls(value);
+  }, [value]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setIsUploading(true);
-    try {
-      const uploadPromises = Array.from(files).map((file) => uploadToImageKit(file));
-      const urls = await Promise.all(uploadPromises);
+    if (value.length + files.length > maxFiles) {
+      toast.error(`Maximum ${maxFiles} files allowed`);
+      return;
+    }
 
-      if (multiple) {
-        const currentUrls = Array.isArray(value) ? value : value ? [value] : [];
-        const combined = [...currentUrls, ...urls].slice(0, maxFiles);
-        onChange(combined);
-      } else {
-        // If replacing an existing image, delete the old one from ImageKit
-        if (typeof value === "string" && value) {
-          deleteFromImageKit(value);
-        }
-        onChange(urls[0]);
-      }
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("Failed to upload image(s). Please check your ImageKit credentials.");
+    setIsUploading(true);
+
+    try {
+      const uploadPromises = Array.from(files).map(file => uploadToImageKit(file));
+      const newUrls = await Promise.all(uploadPromises);
+
+      const updatedUrls = multiple ? [...value, ...newUrls] : newUrls;
+      
+      onChange(updatedUrls);
+      setPreviewUrls(updatedUrls);
+
+      toast.success(`${newUrls.length} image(s) uploaded successfully`);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to upload image");
     } finally {
       setIsUploading(false);
+      e.target.value = ""; // Reset input
     }
   };
 
-  const removeImage = (urlToRemove: string) => {
-    // Delete from ImageKit storage
-    deleteFromImageKit(urlToRemove);
-    
-    if (multiple && Array.isArray(value)) {
-      onChange(value.filter((url) => url !== urlToRemove));
-    } else {
-      onChange("");
+  const removeImage = async (index: number) => {
+    const urlToDelete = value[index];
+    if (urlToDelete) {
+      await deleteFromImageKit(urlToDelete);
     }
+
+    const updated = value.filter((_, i) => i !== index);
+    onChange(updated);
+    setPreviewUrls(updated);
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      {label && (
-        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1 block mb-2">
-          {label}
-        </label>
-      )}
-      
-      <div className={`p-6 border-2 border-dashed rounded-xl bg-gray-50 flex flex-col items-center justify-center text-center gap-3 transition-all group ${isUploading ? 'border-[#F5C33C]' : 'border-gray-200 hover:border-[#29B1D2]'}`}>
-        <div className={`p-3 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform ${isUploading ? 'text-[#F5C33C]' : 'text-[#29B1D2]'}`}>
-          {isUploading ? <RefreshCw size={20} className="animate-spin" /> : <ImageIcon size={20} />}
-        </div>
-        <div>
-          <p className="text-xs font-bold text-gray-700">
-            {isUploading ? "Uploading to ImageKit..." : multiple ? `Upload Images (Max ${maxFiles})` : "Upload Image"}
-          </p>
-          <p className="text-[10px] text-gray-400 mt-1">Supported: JPG, PNG, WEBP</p>
-        </div>
+    <div className="space-y-3">
+      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block">
+        {label}
+      </label>
+
+      {/* Upload Area */}
+      <div className="border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-[#29B1D2] transition-colors">
         <input
           type="file"
           accept="image/*"
           multiple={multiple}
+          onChange={handleFileChange}
           className="hidden"
-          id={`image-upload-${label?.replace(/\s+/g, '-').toLowerCase() || 'default'}`}
-          onChange={onFileUpload}
+          id="image-upload"
           disabled={isUploading}
         />
-        <label
-          htmlFor={`image-upload-${label?.replace(/\s+/g, '-').toLowerCase() || 'default'}`}
-          className="mt-1 px-4 py-1.5 bg-white border border-gray-200 font-bold uppercase text-[10px] tracking-widest text-gray-600 rounded-lg shadow-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
-        >
-          {isUploading ? "Processing..." : "Browse Files"}
+        <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <Upload size={24} className="text-gray-500" />
+          </div>
+          <p className="font-medium text-gray-700">Click to upload images</p>
+          <p className="text-xs text-gray-400 mt-1">JPG, PNG, WEBP (Max {maxFiles})</p>
         </label>
       </div>
 
-      {(multiple && Array.isArray(value) && value.length > 0) ? (
-        <div className="flex flex-wrap gap-3 mt-4">
-          {value.map((url, idx) => (
-            <div key={idx} className="relative w-24 h-16 rounded-lg overflow-hidden border border-gray-200 group">
-              <img src={url} alt={`upload-${idx}`} className="w-full h-full object-cover" />
+      {/* Image Previews */}
+      {previewUrls.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 mt-4">
+          {previewUrls.map((url, index) => (
+            <div key={index} className="relative group rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+              <img
+                src={url}
+                alt={`Preview ${index}`}
+                className="w-full h-32 object-cover"
+              />
               <button
-                type="button"
-                onClick={() => removeImage(url)}
-                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                onClick={() => removeImage(index)}
+                className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600"
               >
-                <X size={14} className="text-white" />
+                <X size={14} />
               </button>
             </div>
           ))}
         </div>
-      ) : (!multiple && value && typeof value === 'string') ? (
-        <div className="relative w-full h-32 rounded-xl overflow-hidden mt-2 border border-gray-100 shadow-sm group">
-          <img src={value} alt="preview" className="w-full h-full object-cover" />
-          <button
-            type="button"
-            onClick={() => removeImage(value)}
-            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      ) : null}
+      )}
     </div>
   );
-};
-
-export default ImageUpload;
+}

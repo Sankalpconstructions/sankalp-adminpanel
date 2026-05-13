@@ -1,34 +1,52 @@
 /**
- * Upload Image to ImageKit with Compression
+ * Upload Image to ImageKit (Safe Version)
  */
-export const uploadToImageKit = async (file: File): Promise<string> => {
+export const uploadToImageKit = async (
+  file: File
+): Promise<string> => {
   try {
-    let fileToUpload = file;
+    if (!file || !(file instanceof File)) {
+      throw new Error("Invalid file provided");
+    }
 
-    console.log(`📤 Original: ${file.name} - ${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+    let fileToUpload: File = file;
 
-    // Compress if file is bigger than 2.5 MB
+    console.log(
+      `📤 Original: ${file.name} - ${(file.size / 1024 / 1024).toFixed(2)} MB`
+    );
+
+    // Compress if bigger than 2.5MB
     if (file.size > 2.5 * 1024 * 1024) {
-      console.log("🔄 Compressing image...");
+      console.log("🔄 Compressing...");
 
-      const imageCompression = (await import('browser-image-compression')).default;
+      const imageCompression = (
+        await import("browser-image-compression")
+      ).default;
 
-      const options = {
-        maxSizeMB: 2.0,
+      const compressedBlob = await imageCompression(file, {
+        maxSizeMB: 2,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
-        preserveExif: true,
-      };
+      });
 
-      const compressedFile = await imageCompression(file, options);
-      fileToUpload = compressedFile;
+      // Convert Blob → File
+      fileToUpload = new File(
+        [compressedBlob],
+        file.name,
+        {
+          type: compressedBlob.type || file.type,
+          lastModified: Date.now(),
+        }
+      );
 
-      console.log(`✅ Compressed: ${(compressedFile.size / (1024 * 1024)).toFixed(2)} MB`);
+      console.log(
+        `✅ Compressed: ${(fileToUpload.size / 1024 / 1024).toFixed(2)} MB`
+      );
     }
 
     const formData = new FormData();
     formData.append("file", fileToUpload);
-    formData.append("fileName", fileToUpload.name || file.name);
+    formData.append("fileName", fileToUpload.name);
 
     console.log("🚀 Sending to backend...");
 
@@ -38,28 +56,19 @@ export const uploadToImageKit = async (file: File): Promise<string> => {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      let errorMsg = errorText.slice(0, 150);
-
-      try {
-        const json = JSON.parse(errorText);
-        errorMsg = json.error || errorMsg;
-      } catch {}
-
-      console.error("❌ Upload Failed:", errorMsg);
-      throw new Error(errorMsg);
+      const text = await res.text();
+      throw new Error(text || "Upload failed");
     }
 
     const data = await res.json();
-    console.log("✅ Upload Successful:", data.url);
+
     return data.url;
 
   } catch (error: any) {
     console.error("💥 Upload Error:", error);
-    throw new Error(error.message || "Failed to upload image");
+    throw new Error(error.message || "Upload failed");
   }
 };
-
 
 
 /**
