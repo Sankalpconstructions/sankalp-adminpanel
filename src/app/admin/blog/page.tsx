@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, X, Check, Newspaper, Calendar, Tag, RefreshCw, User, Clock, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
 
 const CATEGORIES = ["Insights", "Market Trends", "Guides"];
 
@@ -21,6 +22,7 @@ export default function BlogsAdminPage() {
       setBlogs(data);
     } catch (error) {
       console.error("Error fetching blogs:", error);
+      toast.error("Failed to save changes.");
     } finally {
       setIsLoading(false);
     }
@@ -77,10 +79,13 @@ export default function BlogsAdminPage() {
         const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
         if (res.ok) {
           setBlogs(blogs.filter(b => (b._id || b.id) !== id));
+        
+          toast.success("Blog post saved successfully!");
         }
       } catch (error) {
         console.error("Error deleting blog:", error);
-      }
+        toast.error("Failed to save changes.");
+    }
     }
   };
 
@@ -97,6 +102,8 @@ export default function BlogsAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setBlogs(blogs.map(b => (b._id || b.id) === id ? updated : b));
+        
+          toast.success("Blog post updated successfully!");
         }
       } else {
         const res = await fetch("/api/blogs", {
@@ -107,11 +114,14 @@ export default function BlogsAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setBlogs([created, ...blogs]);
+        
+          toast.success("Blog post added successfully!");
         }
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving blog:", error);
+      toast.error("Failed to save changes.");
     }
   };
 

@@ -54,3 +54,7 @@ input[type="search"] {
   color: #666666 !important;
   opacity: 1 !important;
 }
+
+button {
+  cursor: pointer;
+}

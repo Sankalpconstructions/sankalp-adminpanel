@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
 
 
+import toast from "react-hot-toast";
+
 type GalleryItem = { id: number; title: string; category: string; image: string; project: string };
 const categories = ["Interior", "Exterior", "Amenities", "Construction", "Events"];
 const emptyForm = { title: "", category: "Interior", image: "", project: "" };
@@ -17,7 +19,6 @@ export default function GalleryAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [formData, setFormData] = useState(emptyForm);
-
 
   const fetchGallery = useCallback(async () => {
     setIsLoading(true);
@@ -54,15 +55,23 @@ export default function GalleryAdminPage() {
         const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
         if (res.ok) {
           setGallery(gallery.filter(g => (g._id || g.id) !== id));
+          toast.success("Item deleted successfully!");
+        } else {
+          toast.error("Failed to delete item.");
         }
       } catch (error) {
         console.error("Error deleting gallery item:", error);
+        toast.error("Failed to delete item.");
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title || !formData.image) {
+      toast.error("Please fill in all required fields (Title, Image).");
+      return;
+    }
     try {
       if (editingItem) {
         const id = editingItem._id || editingItem.id;
@@ -74,6 +83,9 @@ export default function GalleryAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setGallery(gallery.map(g => (g._id || g.id) === id ? updated : g));
+          toast.success("Gallery item updated successfully!");
+        } else {
+          toast.error("Failed to update gallery item.");
         }
       } else {
         const res = await fetch("/api/gallery", {
@@ -84,11 +96,15 @@ export default function GalleryAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setGallery([created, ...gallery]);
+          toast.success("Gallery item added successfully!");
+        } else {
+          toast.error("Failed to add gallery item.");
         }
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving gallery item:", error);
+      toast.error("Failed to save changes.");
     }
   };
 

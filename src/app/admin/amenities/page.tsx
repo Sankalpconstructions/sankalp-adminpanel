@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2, Search, X, Check, Sparkles, Home, Droplets, Dumbbell, Gamepad, Wind, Timer, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 const iconMap: any = {
   Home: Home,
@@ -26,6 +27,7 @@ export default function AmenitiesAdminPage() {
       setAmenities(data);
     } catch (error) {
       console.error("Error fetching amenities:", error);
+      toast.error("Failed to save changes.");
     } finally {
       setIsLoading(false);
     }
@@ -51,10 +53,13 @@ export default function AmenitiesAdminPage() {
         const res = await fetch(`/api/amenities/${id}`, { method: "DELETE" });
         if (res.ok) {
           setAmenities(amenities.filter(a => (a._id || a.id) !== id));
+        
+          toast.success("Amenity saved successfully!");
         }
       } catch (error) {
         console.error("Error deleting amenity:", error);
-      }
+        toast.error("Failed to save changes.");
+    }
     }
   };
 
@@ -70,10 +75,13 @@ export default function AmenitiesAdminPage() {
         const created = await res.json();
         setAmenities([...amenities, created]);
         setIsModalOpen(false);
-        setFormData({ name: "", icon: "Home" });
+        setFormData({ name: "", icon: "Home" 
+          toast.success("Amenity added successfully!");
+        });
       }
     } catch (error) {
       console.error("Error saving amenity:", error);
+      toast.error("Failed to save changes.");
     }
   };
 

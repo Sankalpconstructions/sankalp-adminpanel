@@ -65,6 +65,10 @@ export default function TestimonialsAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.role || !formData.quote) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
     try {
       if (editingItem) {
         const id = editingItem._id || editingItem.id;

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function AdminRegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -50,6 +51,8 @@ export default function AdminRegisterPage() {
         setSuccess("Admin created successfully! Redirecting...");
         setTimeout(() => {
           window.location.href = "/admin/login";
+        
+          toast.success("Item added successfully!");
         }, 2000);
       } else {
         setError(data.error || "Registration failed. Please try again.");

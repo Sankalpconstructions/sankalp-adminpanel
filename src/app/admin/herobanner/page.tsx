@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, X, Check, Layers, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
 
 
 type Slide = { id: number; title: string; subtitle: string; description: string; image: string; ctaText: string; isActive: boolean };
@@ -44,9 +45,13 @@ export default function HeroBannerAdminPage() {
         const res = await fetch(`/api/herobanners/${id}`, { method: "DELETE" });
         if (res.ok) {
           setSlides(slides.filter(s => (s._id || s.id) !== id));
+          toast.success("Banner slide deleted successfully!");
+        } else {
+          toast.error("Failed to delete banner slide.");
         }
       } catch (error) {
         console.error("Error deleting herobanner:", error);
+        toast.error("An error occurred while deleting.");
       }
     }
   };
@@ -64,14 +69,22 @@ export default function HeroBannerAdminPage() {
       });
       if (res.ok) {
         setSlides(slides.map(s => (s._id || s.id) === id ? updatedSlide : s));
+        toast.success("Slide status updated!");
+      } else {
+        toast.error("Failed to update slide status.");
       }
     } catch (error) {
       console.error("Error toggling active state:", error);
+      toast.error("An error occurred while updating status.");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title || !formData.image) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
     try {
       if (editingItem) {
         const id = editingItem._id || editingItem.id;
@@ -83,6 +96,9 @@ export default function HeroBannerAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setSlides(slides.map(s => (s._id || s.id) === id ? updated : s));
+          toast.success("Banner slide updated successfully!");
+        } else {
+          toast.error("Failed to update banner slide.");
         }
       } else {
         const res = await fetch("/api/herobanners", {
@@ -93,11 +109,15 @@ export default function HeroBannerAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setSlides([...slides, created]);
+          toast.success("Banner slide added successfully!");
+        } else {
+          toast.error("Failed to add banner slide.");
         }
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving herobanner:", error);
+      toast.error("An error occurred while saving.");
     }
   };
 

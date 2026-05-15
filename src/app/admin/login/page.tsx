@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { Lock, User, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);

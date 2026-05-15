@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, Check, ArrowLeft, HelpCircle, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function FAQAdminPage() {
   const [faqs, setFaqs] = useState<any[]>([]);
@@ -18,6 +19,7 @@ export default function FAQAdminPage() {
       setFaqs(data);
     } catch (error) {
       console.error("Error fetching FAQs:", error);
+      toast.error("Failed to save changes.");
     } finally {
       setIsLoading(false);
     }
@@ -53,10 +55,13 @@ export default function FAQAdminPage() {
         const res = await fetch(`/api/faq/${id}`, { method: "DELETE" });
         if (res.ok) {
           setFaqs(faqs.filter(f => (f._id || f.id) !== id));
+        
+          toast.success("FAQ saved successfully!");
         }
       } catch (error) {
         console.error("Error deleting FAQ:", error);
-      }
+        toast.error("Failed to save changes.");
+    }
     }
   };
 
@@ -73,6 +78,8 @@ export default function FAQAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setFaqs(faqs.map(f => (f._id || f.id) === id ? updated : f));
+        
+          toast.success("FAQ updated successfully!");
         }
       } else {
         const res = await fetch("/api/faq", {
@@ -83,11 +90,14 @@ export default function FAQAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setFaqs([...faqs, created]);
+        
+          toast.success("FAQ added successfully!");
         }
       }
       setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving FAQ:", error);
+      toast.error("Failed to save changes.");
     }
   };
 

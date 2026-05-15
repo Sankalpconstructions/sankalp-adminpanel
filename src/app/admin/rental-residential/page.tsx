@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, Check, ArrowLeft, RefreshCw, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
+import toast from "react-hot-toast";
 
 export default function RentalResidentialAdminPage() {
   const [properties, setProperties] = useState<any[]>([]);
@@ -19,6 +20,7 @@ export default function RentalResidentialAdminPage() {
       setProperties(data);
     } catch (error) {
       console.error("Error fetching residential rentals:", error);
+      toast.error("Failed to save changes.");
     } finally {
       setIsLoading(false);
     }
@@ -62,15 +64,22 @@ export default function RentalResidentialAdminPage() {
         const res = await fetch(`/api/rentals/${id}`, { method: "DELETE" });
         if (res.ok) {
           setProperties(properties.filter(p => (p._id || p.id) !== id));
+        
+          toast.success("Residential property saved successfully!");
         }
       } catch (error) {
         console.error("Error deleting property:", error);
-      }
+        toast.error("Failed to save changes.");
+    }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title || !formData.location || !formData.sqft || !formData.facing || !formData.bhk || !formData.phone || !formData.whatsapp) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
     try {
       if (editingProperty) {
         const id = editingProperty._id || editingProperty.id;
@@ -82,6 +91,8 @@ export default function RentalResidentialAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setProperties(properties.map(p => (p._id || p.id) === id ? updated : p));
+        
+          toast.success("Residential property updated successfully!");
         }
       } else {
         const res = await fetch("/api/rentals", {
@@ -92,11 +103,14 @@ export default function RentalResidentialAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setProperties([created, ...properties]);
+        
+          toast.success("Residential property added successfully!");
         }
       }
       setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving property:", error);
+      toast.error("Failed to save changes.");
     }
   };
 

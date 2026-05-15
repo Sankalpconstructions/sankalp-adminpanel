@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Plus, Edit2, Trash2, Search, X, Check, Map, Maximize, Building, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function FloorPlansAdminPage() {
   const [floorPlans, setFloorPlans] = useState<any[]>([]);
@@ -18,6 +19,7 @@ export default function FloorPlansAdminPage() {
       setFloorPlans(data);
     } catch (error) {
       console.error("Error fetching floor plans:", error);
+      toast.error("Failed to save changes.");
     } finally {
       setIsLoading(false);
     }
@@ -57,10 +59,13 @@ export default function FloorPlansAdminPage() {
         const res = await fetch(`/api/floorplans/${id}`, { method: "DELETE" });
         if (res.ok) {
           setFloorPlans(floorPlans.filter(p => (p._id || p.id) !== id));
+        
+          toast.success("Floorplan saved successfully!");
         }
       } catch (error) {
         console.error("Error deleting floor plan:", error);
-      }
+        toast.error("Failed to save changes.");
+    }
     }
   };
 
@@ -77,6 +82,8 @@ export default function FloorPlansAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setFloorPlans(floorPlans.map(p => (p._id || p.id) === id ? updated : p));
+        
+          toast.success("Floorplan updated successfully!");
         }
       } else {
         const res = await fetch("/api/floorplans", {
@@ -87,11 +94,14 @@ export default function FloorPlansAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setFloorPlans([created, ...floorPlans]);
+        
+          toast.success("Floorplan added successfully!");
         }
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving floor plan:", error);
+      toast.error("Failed to save changes.");
     }
   };
 

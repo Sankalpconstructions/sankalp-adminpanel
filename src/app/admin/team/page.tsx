@@ -21,6 +21,7 @@ export default function TeamAdminPage() {
       setMembers(data);
     } catch (error) {
       console.error("Error fetching team members:", error);
+      toast.error("Failed to save changes.");
     } finally {
       setIsLoading(false);
     }
@@ -60,12 +61,17 @@ export default function TeamAdminPage() {
         }
       } catch (error) {
         console.error("Error deleting member:", error);
-      }
+        toast.error("Failed to save changes.");
+    }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.role) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
     if (!formData.image) {
       toast.error("Please upload a profile photo.");
       return;
@@ -82,6 +88,9 @@ export default function TeamAdminPage() {
         if (res.ok) {
           const updated = await res.json();
           setMembers(members.map(m => (m._id || m.id) === id ? updated : m));
+          toast.success("Team member updated successfully!");
+        } else {
+          toast.error("Failed to update team member.");
         }
       } else {
         const res = await fetch("/api/team", {
@@ -92,11 +101,15 @@ export default function TeamAdminPage() {
         if (res.ok) {
           const created = await res.json();
           setMembers([...members, created]);
+          toast.success("Team member added successfully!");
+        } else {
+          toast.error("Failed to add team member.");
         }
       }
       setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving member:", error);
+      toast.error("An error occurred while saving.");
     }
   };
 
