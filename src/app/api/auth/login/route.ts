@@ -19,9 +19,7 @@ export async function POST(req: NextRequest) {
 
     // If no admin exists yet, seed from env
     const adminCount = await AdminUser.countDocuments();
-    console.log(`[Login API] Admin user count: ${adminCount}`);
     if (adminCount === 0 && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-      console.log(`[Login API] Seeding admin user from environment variables`);
       const hashed = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
       await AdminUser.create({ email: process.env.ADMIN_EMAIL, password: hashed });
     }

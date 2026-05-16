@@ -21,8 +21,6 @@ export async function PUT(
     const { id } = await params;
     const data = await req.json();
     
-    console.log("Updating Lead ID:", id);
-    console.log("Data received for update:", JSON.stringify(data, null, 2));
 
     const { _id, ...updateData } = data;
     
@@ -37,7 +35,6 @@ export async function PUT(
       return NextResponse.json({ error: "Lead not found" }, { status: 404, headers: corsHeaders });
     }
 
-    console.log("Lead updated successfully. History count:", lead.history?.length);
     return NextResponse.json(lead, { headers: corsHeaders });
   } catch (error: any) {
     console.error("API Update Error:", error);

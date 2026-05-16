@@ -15,34 +15,50 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
+
     const projects = await Project.find({}).sort({ createdAt: -1 });
-    
-    // Check if request is from Admin or Public
+
     const referer = req.headers.get("referer") || "";
     const isPublicRequest = !referer.includes("/admin");
 
-    if (isPublicRequest) {
-      // Security transformation for the public list view
-      const secureProjects = projects.map(project => {
-        const p = project.toObject();
+    const formattedProjects = projects.map(project => {
+      const p = project.toObject();
+
+  const mainImage =
+  p.gallery?.[0] ||
+  p.floorPlans?.[0] ||
+  p.banners?.[0] ||
+  "";
+
+(p as any).mainImage = mainImage;
+
+      if (isPublicRequest) {
+        // security masking for public
+
         (p as any).floorPlansCount = p.floorPlans?.length || 0;
         p.floorPlans = [];
         p.priceStarting = "Price on Request";
+
         if (p.priceConfigurations) {
           p.priceConfigurations = p.priceConfigurations.map((pc: any) => ({
             ...pc,
-            price: "Price on Request"
+            price: "Price on Request",
           }));
         }
-        return p;
-      });
-      return NextResponse.json(secureProjects, { headers: corsHeaders });
-    }
+      }
 
-    // Admin request gets full data
-    return NextResponse.json(projects, { headers: corsHeaders });
+      return p;
+    });
+
+    return NextResponse.json(formattedProjects, { headers: corsHeaders });
+
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders });
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500,
+        headers: corsHeaders
+      }
+    );
   }
 }
 

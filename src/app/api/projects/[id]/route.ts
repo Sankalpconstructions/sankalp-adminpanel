@@ -60,8 +60,7 @@ export async function PUT(
     await connectDB();
     const { id } = await params;
     const data = await req.json();
-    // Debug: log whether brochures present in incoming payload
-    console.log('[API] PUT /api/projects/:id incoming brochures:', Array.isArray(data.brochures) ? data.brochures.length : 'none');
+
 
     const { _id, ...rest } = data;
     // Ensure brochures array exists to avoid accidental omission
