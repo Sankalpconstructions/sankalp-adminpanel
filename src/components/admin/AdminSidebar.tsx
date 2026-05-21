@@ -110,7 +110,7 @@ function AdminSidebar() {
   };
 
   return (
-    <aside className="w-full h-full bg-white border-r border-gray-200/50 shadow-sm flex flex-col z-50 overflow-y-auto overflow-x-hidden">
+    <aside className="w-full h-full bg-white border-r border-gray-200/50 shadow-sm flex flex-col z-50 overflow-y-auto overflow-x-hidden chat-scroll">
       {/* Branding */}
       <div className="p-6 pb-8 flex items-center gap-3 shrink-0">
         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-md shadow-gray-200/50 border border-gray-100 transition-transform hover:scale-105 shrink-0">

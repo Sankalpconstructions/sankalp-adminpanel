@@ -24,11 +24,14 @@ const RentalPropertySchema: Schema = new Schema({
   bhk: { type: String }, // Optional, only for residential
   phone: { type: String, required: true },
   whatsapp: { type: String, required: true },
-  status: { type: String, enum: ['available', 'rented'], default: 'available' },
-  propertyType: { type: String, enum: ['residential', 'commercial'], required: true },
+  status: { type: String, enum: ['available', 'rented'], default: 'available', index: true },
+  propertyType: { type: String, enum: ['residential', 'commercial'], required: true, index: true },
 }, {
   timestamps: true
 });
+
+RentalPropertySchema.index({ propertyType: 1, createdAt: -1 });
+RentalPropertySchema.index({ createdAt: -1 });
 
 if (mongoose.models && mongoose.models.RentalProperty) {
   delete mongoose.models.RentalProperty;

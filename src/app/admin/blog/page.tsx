@@ -159,7 +159,7 @@ export default function BlogsAdminPage() {
 
       {/* Table View */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto chat-scroll">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-[0.2em] font-bold border-b border-gray-50">
@@ -271,7 +271,7 @@ export default function BlogsAdminPage() {
                 </button>
               </div>
               
-              <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto">
+              <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto chat-scroll">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-6">
                     <div className="space-y-2">

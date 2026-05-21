@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="h-screen bg-[#FDFDFD] flex overflow-hidden">
       <Toaster position="top-right" />
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block w-72 shrink-0 border-r border-gray-100 bg-white h-full overflow-y-auto">
+      <div className="hidden lg:block w-72 shrink-0 border-r border-gray-100 bg-white h-full overflow-y-auto chat-scroll">
         <AdminSidebar />
       </div>
 
@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed left-0 top-0 bottom-0 z-[70] lg:hidden w-72 h-full overflow-y-auto bg-white"
+              className="fixed left-0 top-0 bottom-0 z-[70] lg:hidden w-72 h-full overflow-y-auto bg-white chat-scroll"
             >
               <AdminSidebar />
               <button
@@ -119,7 +119,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             const isScrolled = e.currentTarget.scrollTop > 20;
             if (isScrolled !== scrolled) setScrolled(isScrolled);
           }}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 lg:p-10 transition-all scroll-smooth"
+          className="flex-1 overflow-y-auto chat-scroll p-4 sm:p-6 md:p-8 lg:p-10 transition-all scroll-smooth"
         >
           <div className="max-w-7xl mx-auto">
             {children}

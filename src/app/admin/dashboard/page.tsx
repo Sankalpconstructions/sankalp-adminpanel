@@ -195,7 +195,7 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto chat-scroll">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50/50 text-gray-400 text-[9px] uppercase tracking-[0.2em] font-bold">

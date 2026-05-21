@@ -19,10 +19,11 @@ export async function GET(
   try {
     await connectDB();
     const { id } = await params;
-    const project = await Project.findById(id);
+    const cleanId = id.trim();
+    const project = await Project.findById(cleanId);
     
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404, headers: corsHeaders });
+      return NextResponse.json({ error: "Project not found", debugId: id, cleanId, length: id.length }, { status: 404, headers: corsHeaders });
     }
 
     const projectObj = project.toObject();

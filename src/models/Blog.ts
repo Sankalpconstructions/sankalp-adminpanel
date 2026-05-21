@@ -15,7 +15,7 @@ export interface IBlog extends Document {
 
 const BlogSchema: Schema = new Schema({
   title: { type: String, required: true },
-  category: { type: String, required: true },
+  category: { type: String, required: true, index: true },
   image: { type: String, required: true },
   date: { type: String, required: true },
   summary: { type: String, required: true },
@@ -25,6 +25,8 @@ const BlogSchema: Schema = new Schema({
 }, {
   timestamps: true
 });
+
+BlogSchema.index({ createdAt: -1 });
 
 if (mongoose.models.Blog) {
   delete mongoose.models.Blog;

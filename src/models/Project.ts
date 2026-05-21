@@ -42,9 +42,9 @@ const ProjectSchema: Schema = new Schema({
   title: { type: String, required: true },
   location: { type: String, required: true },
   address: { type: String },
-  type: { type: String, required: true },
+  type: { type: String, required: true, index: true },
   description: { type: String, required: true },
-  status: { type: String, default: 'Upcoming' },
+  status: { type: String, default: 'Upcoming', index: true },
   possessionDate: { type: String },
   totalFloors: { type: String },
   totalUnits: { type: String },
@@ -75,6 +75,8 @@ const ProjectSchema: Schema = new Schema({
 }, {
   timestamps: true
 });
+
+ProjectSchema.index({ createdAt: -1 });
 
 // Force refresh the model in development to avoid "Cast to embedded" errors from cached schemas
 if (mongoose.models && mongoose.models.Project) {

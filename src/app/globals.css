@@ -58,3 +58,48 @@ input[type="search"] {
 button {
   cursor: pointer;
 }
+
+/* 
+ * Premium Custom Scrollbar 
+ * Applies globally to all scrolling areas in the admin panel 
+ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #711113;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9a1a1f;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #711113 #f8f9fa;
+}
+
+/* Keep .chat-scroll class available just in case it's explicitly needed */
+.chat-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.chat-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: #711113;
+}
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #711113 #f1f1f1;
+}

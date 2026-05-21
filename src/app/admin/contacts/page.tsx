@@ -321,7 +321,7 @@ export default function ContactsAdminPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar"
+              className="p-6 space-y-6 max-h-[80vh] overflow-y-auto chat-scroll"
             >
               <div className="flex flex-col items-center text-center">
                  <div className="w-16 h-16 bg-[#711113]/10 text-[#711113] rounded-2xl flex items-center justify-center text-2xl font-bold mb-3">

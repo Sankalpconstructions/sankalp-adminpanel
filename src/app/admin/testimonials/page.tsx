@@ -182,7 +182,7 @@ export default function TestimonialsAdminPage() {
                 </h2>
                 <button onClick={() => setIsModalOpen(false)} className="hover:rotate-90 transition-transform"><X size={24} /></button>
               </div>
-              <form onSubmit={handleSubmit} className="p-8 space-y-5 overflow-y-auto max-h-[80vh]">
+              <form onSubmit={handleSubmit} className="p-8 space-y-5 overflow-y-auto chat-scroll max-h-[80vh]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Client Name</label>

@@ -21,11 +21,11 @@ export interface ILead extends Document {
 
 const LeadSchema: Schema = new Schema({
   name: { type: String, required: true },
-  email: { type: String, required: true },
+  email: { type: String, required: true, index: true },
   phone: { type: String, required: true },
   project: { type: String, required: true },
   message: { type: String, required: true },
-  status: { type: String, default: 'New' },
+  status: { type: String, default: 'New', index: true },
   date: { type: String, required: true },
   history: [
     {
@@ -38,6 +38,8 @@ const LeadSchema: Schema = new Schema({
   timestamps: true,
   strict: true // Turn strict mode back ON
 });
+
+LeadSchema.index({ createdAt: -1 });
 
 if (process.env.NODE_ENV !== 'production') {
   delete mongoose.models.Lead;

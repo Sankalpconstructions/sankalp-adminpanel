@@ -4,7 +4,8 @@ export interface IHeroBanner extends Document {
   title: string;
   subtitle: string;
   description: string;
-  image: string;
+  image: string; // Desktop Image
+  mobileImage: string; // Mobile Image
   ctaText: string;
   isActive: boolean;
 }
@@ -14,6 +15,7 @@ const HeroBannerSchema: Schema = new Schema({
   subtitle: { type: String, required: true },
   description: { type: String, required: true },
   image: { type: String, required: true },
+  mobileImage: { type: String, required: true },
   ctaText: { type: String, required: true },
   isActive: { type: Boolean, default: true }
 });

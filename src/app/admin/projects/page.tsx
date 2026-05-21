@@ -480,10 +480,10 @@ console.log("Paginated Projects:", paginatedProjects);
                       <ImageUpload
                         label="Banner Images (Max 3) *"
                         value={formData.banners}
-         onChange={(urls) => setFormData({
-  ...formData,
-  banners: urls.filter(Boolean)
-})}
+                        onChange={(urls) => setFormData({
+                          ...formData,
+                          banners: (Array.isArray(urls) ? urls : [urls]).filter(Boolean)
+                        })}
                         multiple={true}
                         maxFiles={3}
                       />
@@ -535,7 +535,7 @@ console.log("Paginated Projects:", paginatedProjects);
                     <div className="space-y-8">
                       <div>
                         <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">Detailed Price Layout</h3>
-                        <div className="overflow-x-auto rounded-xl border border-gray-200">
+                        <div className="overflow-x-auto chat-scroll rounded-xl border border-gray-200">
                           <table className="w-full text-left text-sm">
                             <thead className="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase tracking-widest">
                               <tr>

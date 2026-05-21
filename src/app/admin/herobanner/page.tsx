@@ -6,8 +6,8 @@ import ImageUpload from "@/components/admin/ImageUpload";
 import toast from "react-hot-toast";
 
 
-type Slide = { id: number; title: string; subtitle: string; description: string; image: string; ctaText: string; isActive: boolean };
-const emptyForm = { title: "", subtitle: "", description: "", image: "", ctaText: "Explore Now", isActive: true };
+type Slide = { id: number; title: string; subtitle: string; description: string; image: string; mobileImage: string; ctaText: string; isActive: boolean };
+const emptyForm = { title: "", subtitle: "", description: "", image: "", mobileImage: "", ctaText: "Explore Now", isActive: true };
 
 export default function HeroBannerAdminPage() {
   const [slides, setSlides] = useState<any[]>([]);
@@ -35,7 +35,7 @@ export default function HeroBannerAdminPage() {
 
   const handleOpenModal = (item: Slide | null = null) => {
     setEditingItem(item);
-    setFormData(item ? { title: item.title, subtitle: item.subtitle, description: item.description, image: item.image, ctaText: item.ctaText, isActive: item.isActive } : { ...emptyForm });
+    setFormData(item ? { title: item.title, subtitle: item.subtitle, description: item.description, image: item.image, mobileImage: item.mobileImage || "", ctaText: item.ctaText, isActive: item.isActive } : { ...emptyForm });
     setIsModalOpen(true);
   };
 
@@ -81,8 +81,8 @@ export default function HeroBannerAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.image) {
-      toast.error("Please fill in all required fields.");
+    if (!formData.title || !formData.image || !formData.mobileImage) {
+      toast.error("Please fill in all required fields (including both images).");
       return;
     }
     try {
@@ -147,14 +147,22 @@ export default function HeroBannerAdminPage() {
                 >
                   <div className="flex flex-col md:flex-row">
                     {/* Image Preview */}
-                    <div className="w-full md:w-72 h-44 md:h-auto relative shrink-0 overflow-hidden bg-gray-100">
-                      <img src={slide.image} alt={slide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-end p-4 md:hidden">
+                    <div className="w-full md:w-72 h-44 md:h-auto relative shrink-0 overflow-hidden bg-gray-100 flex">
+                      <div className="w-2/3 h-full relative">
+                        <img src={slide.image} alt={slide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Desktop</div>
+                      </div>
+                      <div className="w-1/3 h-full relative border-l border-white/20">
+                        <img src={slide.mobileImage || slide.image} alt={slide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Mobile</div>
+                      </div>
+                      
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-end p-4 md:hidden pointer-events-none">
                         <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${slide.isActive ? "bg-green-400 text-white" : "bg-gray-200 text-gray-600"}`}>
                           {slide.isActive ? "Active" : "Inactive"}
                         </span>
                       </div>
-                      <div className="absolute top-3 left-3 hidden md:block">
+                      <div className="absolute top-3 right-3 hidden md:block z-10">
                         <span className="bg-black/40 backdrop-blur text-white text-[10px] px-2 py-1 rounded font-bold">Slide {idx + 1}</span>
                       </div>
                     </div>
@@ -222,7 +230,7 @@ export default function HeroBannerAdminPage() {
                 </h2>
                 <button onClick={() => setIsModalOpen(false)} className="hover:rotate-90 transition-transform"><X size={24} /></button>
               </div>
-              <form onSubmit={handleSubmit} className="p-8 space-y-5 overflow-y-auto max-h-[80vh]">
+              <form onSubmit={handleSubmit} className="p-8 space-y-5 overflow-y-auto chat-scroll max-h-[80vh]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Main Title</label>
@@ -237,11 +245,18 @@ export default function HeroBannerAdminPage() {
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Description</label>
                   <textarea rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none" placeholder="Short compelling description for this slide..." />
                 </div>
-                <ImageUpload
-                  label="Background Image"
-                  value={formData.image}
-                  onChange={(url) => setFormData({ ...formData, image: url as string })}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <ImageUpload
+                    label="Desktop Image (16:9)"
+                    value={formData.image}
+                    onChange={(url) => setFormData({ ...formData, image: url as string })}
+                  />
+                  <ImageUpload
+                    label="Mobile Image (9:16)"
+                    value={formData.mobileImage}
+                    onChange={(url) => setFormData({ ...formData, mobileImage: url as string })}
+                  />
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">

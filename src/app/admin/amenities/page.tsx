@@ -75,9 +75,8 @@ export default function AmenitiesAdminPage() {
         const created = await res.json();
         setAmenities([...amenities, created]);
         setIsModalOpen(false);
-        setFormData({ name: "", icon: "Home" 
-          toast.success("Amenity added successfully!");
-        });
+        setFormData({ name: "", icon: "Home" });
+        toast.success("Amenity added successfully!");
       }
     } catch (error) {
       console.error("Error saving amenity:", error);
