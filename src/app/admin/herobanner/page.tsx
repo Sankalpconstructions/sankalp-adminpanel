@@ -147,7 +147,7 @@ export default function HeroBannerAdminPage() {
                 >
                   <div className="flex flex-col md:flex-row">
                     {/* Image Preview */}
-                    <div className="w-full md:w-72 h-44 md:h-auto relative shrink-0 overflow-hidden bg-gray-100 flex">
+                    <div className="w-full md:w-72 h-48 md:h-auto relative shrink-0 overflow-hidden bg-gray-100 flex">
                       <div className="w-2/3 h-full relative">
                         <img src={slide.image} alt={slide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Desktop</div>
@@ -157,25 +157,20 @@ export default function HeroBannerAdminPage() {
                         <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Mobile</div>
                       </div>
                       
-                      <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-end p-4 md:hidden pointer-events-none">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${slide.isActive ? "bg-green-400 text-white" : "bg-gray-200 text-gray-600"}`}>
-                          {slide.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                      <div className="absolute top-3 right-3 hidden md:block z-10">
+                      <div className="absolute top-3 right-3 z-10">
                         <span className="bg-black/40 backdrop-blur text-white text-[10px] px-2 py-1 rounded font-bold">Slide {idx + 1}</span>
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 p-6 flex flex-col justify-between">
+                    <div className="flex-1 p-4 md:p-6 flex flex-col justify-between">
                       <div>
                         <div className="flex items-start justify-between mb-3">
-                          <div>
+                          <div className="pr-4">
                             <p className="text-[10px] font-bold text-[#29B1D2] uppercase tracking-widest mb-1">{slide.subtitle}</p>
-                            <h3 className="text-xl font-bold text-gray-900">{slide.title}</h3>
+                            <h3 className="text-lg md:text-xl font-bold text-gray-900">{slide.title}</h3>
                           </div>
-                          <div className="hidden md:flex items-center gap-2 ml-4 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0">
                             <button onClick={() => toggleActive(slide._id || slide.id)} title={slide.isActive ? "Deactivate" : "Activate"}>
                               {slide.isActive
                                 ? <ToggleRight size={28} className="text-green-500" />
@@ -187,7 +182,7 @@ export default function HeroBannerAdminPage() {
                             </span>
                           </div>
                         </div>
-                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2">{slide.description}</p>
+                        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 md:line-clamp-none">{slide.description}</p>
                         <div className="mt-3">
                           <span className="inline-flex items-center gap-2 bg-[#711113]/10 text-[#711113] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
                             CTA: &ldquo;{slide.ctaText}&rdquo;
@@ -195,11 +190,11 @@ export default function HeroBannerAdminPage() {
                         </div>
                       </div>
 
-                      <div className="flex gap-3 mt-5 pt-4 border-t border-gray-50">
-                        <button onClick={() => handleOpenModal(slide)} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 font-bold text-xs uppercase rounded-xl hover:bg-blue-600 hover:text-white transition-all">
+                      <div className="flex flex-wrap md:flex-nowrap gap-3 mt-5 pt-4 border-t border-gray-50">
+                        <button onClick={() => handleOpenModal(slide)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 font-bold text-xs uppercase rounded-xl hover:bg-blue-600 hover:text-white transition-all">
                           <Edit2 size={14} /> Edit Slide
                         </button>
-                        <button onClick={() => handleDelete(slide._id || slide.id)} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-500 font-bold text-xs uppercase rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                        <button onClick={() => handleDelete(slide._id || slide.id)} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-500 font-bold text-xs uppercase rounded-xl hover:bg-red-500 hover:text-white transition-all">
                           <Trash2 size={14} /> Delete
                         </button>
                       </div>
