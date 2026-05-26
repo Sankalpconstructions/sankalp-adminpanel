@@ -62,7 +62,7 @@ console.log("Fetched Projects:", projects);
     priceStarting: "",
     banners: [] as string[],
     highlights: [""] as string[],
-    priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
+    priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
     amenities: [] as string[],
     landmarks: [] as { type: string; text: string }[],
     brochures: [] as { name: string, url: string }[],
@@ -95,7 +95,7 @@ console.log("Paginated Projects:", paginatedProjects);
         ...project,
         banners: project.banners || [project.image || ""],
         highlights: project.highlights || [""],
-        priceConfigurations: project.priceConfigurations || [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
+        priceConfigurations: project.priceConfigurations || [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
         amenities: project.amenities || [],
         landmarks: project.landmarks || [],
         brochures: project.brochures || [],
@@ -117,7 +117,7 @@ console.log("Paginated Projects:", paginatedProjects);
         status: "Upcoming", amenitiesCount: "", priceStarting: "",
         banners: [],
         highlights: [""],
-        priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }],
+        priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
         amenities: [],
         landmarks: [],
         brochures: [],
@@ -218,7 +218,7 @@ console.log("Paginated Projects:", paginatedProjects);
     newC[idx] = { ...newC[idx], [field]: val };
     setFormData({ ...formData, priceConfigurations: newC });
   };
-  const addPriceConfig = () => setFormData({ ...formData, priceConfigurations: [...formData.priceConfigurations, { configuration: "", carpetArea: "", superBuiltUpArea: "", price: "" }] });
+  const addPriceConfig = () => setFormData({ ...formData, priceConfigurations: [...formData.priceConfigurations, { configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }] });
   const removePriceConfig = (idx: number) => {
     const newC = formData.priceConfigurations.filter((_, i) => i !== idx);
     setFormData({ ...formData, priceConfigurations: newC });
@@ -536,24 +536,26 @@ console.log("Paginated Projects:", paginatedProjects);
                       <div>
                         <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">Detailed Price Layout</h3>
                         <div className="overflow-x-auto chat-scroll rounded-xl border border-gray-200">
-                          <table className="w-full text-left text-sm">
+                          <table className="w-full text-left text-sm min-w-[800px]">
                             <thead className="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase tracking-widest">
                               <tr>
-                                <th className="p-4">Configuration</th>
-                                <th className="p-4">Carpet Area</th>
-                                <th className="p-4">Super Built-up Area</th>
-                                <th className="p-4">Price</th>
-                                <th className="p-4 text-right">Action</th>
+                                <th className="p-4 whitespace-nowrap">Configuration</th>
+                                <th className="p-4 whitespace-nowrap">Carpet Area</th>
+                                <th className="p-4 whitespace-nowrap">Super Built-up Area</th>
+                                <th className="p-4 whitespace-nowrap">UDS Sq.Yards</th>
+                                <th className="p-4 whitespace-nowrap">Price</th>
+                                <th className="p-4 text-right whitespace-nowrap">Action</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                               {formData.priceConfigurations.map((config, idx) => (
                                 <tr key={idx} className="hover:bg-gray-50/50">
-                                  <td className="p-4"><input value={config.configuration} onChange={e => handlePriceConfigChange(idx, 'configuration', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 2 BHK Premium" /></td>
-                                  <td className="p-4"><input value={config.carpetArea} onChange={e => handlePriceConfigChange(idx, 'carpetArea', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 750 sq.ft." /></td>
-                                  <td className="p-4"><input value={config.superBuiltUpArea} onChange={e => handlePriceConfigChange(idx, 'superBuiltUpArea', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 1050 sq.ft." /></td>
-                                  <td className="p-4"><input value={config.price} onChange={e => handlePriceConfigChange(idx, 'price', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. ₹ 65 L" /></td>
-                                  <td className="p-4 text-right">
+                                  <td className="p-4 min-w-[160px]"><input value={config.configuration} onChange={e => handlePriceConfigChange(idx, 'configuration', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 2 BHK Premium" /></td>
+                                  <td className="p-4 min-w-[120px]"><input value={config.carpetArea} onChange={e => handlePriceConfigChange(idx, 'carpetArea', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 750 sq.ft." /></td>
+                                  <td className="p-4 min-w-[140px]"><input value={config.superBuiltUpArea} onChange={e => handlePriceConfigChange(idx, 'superBuiltUpArea', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 1050 sq.ft." /></td>
+                                  <td className="p-4 min-w-[120px]"><input value={config.udsSqYards} onChange={e => handlePriceConfigChange(idx, 'udsSqYards', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. 40 Sq.Yds" /></td>
+                                  <td className="p-4 min-w-[120px]"><input value={config.price} onChange={e => handlePriceConfigChange(idx, 'price', e.target.value)} className="w-full p-2.5 bg-white border border-gray-200 rounded-lg outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 transition-all text-gray-700 font-medium placeholder:text-gray-300" placeholder="e.g. ₹ 65 L" /></td>
+                                  <td className="p-4 text-right min-w-[60px]">
                                     <button type="button" onClick={() => removePriceConfig(idx)} className="text-rose-500 hover:bg-rose-50 p-2.5 rounded-lg ml-auto block transition-colors border border-transparent hover:border-rose-100">
                                       <Trash2 size={16} />
                                     </button>
