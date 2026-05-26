@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 
 type Slide = { id: number; title: string; subtitle: string; description: string; image: string; mobileImage: string; ctaText: string; isActive: boolean };
-const emptyForm = { title: "", subtitle: "", description: "", image: "", mobileImage: "", ctaText: "Explore Now", isActive: true };
+const emptyForm = { title: "Sankalp Hero", subtitle: "Premium Quality", description: "Experience the best living spaces.", image: "", mobileImage: "", ctaText: "Explore Now", isActive: true };
 
 export default function HeroBannerAdminPage() {
   const [slides, setSlides] = useState<any[]>([]);
@@ -81,7 +81,7 @@ export default function HeroBannerAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.image || !formData.mobileImage) {
+    if (!formData.image || !formData.mobileImage) {
       toast.error("Please fill in all required fields (including both images).");
       return;
     }
@@ -156,7 +156,7 @@ export default function HeroBannerAdminPage() {
                         <img src={slide.mobileImage || slide.image} alt={slide.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                         <div className="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Mobile</div>
                       </div>
-                      
+
                       <div className="absolute top-3 right-3 z-10">
                         <span className="bg-black/40 backdrop-blur text-white text-[10px] px-2 py-1 rounded font-bold">Slide {idx + 1}</span>
                       </div>
@@ -226,7 +226,7 @@ export default function HeroBannerAdminPage() {
                 <button onClick={() => setIsModalOpen(false)} className="hover:rotate-90 transition-transform"><X size={24} /></button>
               </div>
               <form onSubmit={handleSubmit} className="p-8 space-y-5 overflow-y-auto chat-scroll max-h-[80vh]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Main Title</label>
                     <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="e.g. Build Your Dream Home" />
@@ -235,11 +235,11 @@ export default function HeroBannerAdminPage() {
                     <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Subtitle</label>
                     <input value={formData.subtitle} onChange={e => setFormData({ ...formData, subtitle: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="e.g. Luxury Living Redefined" />
                   </div>
-                </div>
+                </div> 
                 <div className="space-y-2">
                   <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Description</label>
                   <textarea rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none" placeholder="Short compelling description for this slide..." />
-                </div>
+                </div>*/}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <ImageUpload
                     label="Desktop Image (16:9)"
