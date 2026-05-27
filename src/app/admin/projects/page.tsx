@@ -31,7 +31,6 @@ export default function ProjectsAdminPage() {
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
-console.log("Fetched Projects:", projects);
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
@@ -83,8 +82,7 @@ console.log("Fetched Projects:", projects);
 
   const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
   const paginatedProjects = filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-console.log("Filtered Projects:", filteredProjects);
-console.log("Paginated Projects:", paginatedProjects);
+
   const handleOpenForm = (project: any = null) => {
     setActiveTab(0);
     setCustomAmenityText("");
@@ -152,7 +150,7 @@ console.log("Paginated Projects:", paginatedProjects);
     if (!validateCurrentTab()) return;
 
     // Filter out completely empty configuration rows
-    const cleanedPriceConfigurations = (formData.priceConfigurations || []).filter(config => 
+    const cleanedPriceConfigurations = (formData.priceConfigurations || []).filter(config =>
       config.configuration?.trim() ||
       config.carpetArea?.trim() ||
       config.superBuiltUpArea?.trim() ||
