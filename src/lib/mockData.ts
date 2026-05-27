@@ -19,13 +19,18 @@ export const initialBlogs = [
 ];
 
 export const initialAmenities = [
-  { id: 1, name: "Luxury Clubhouse", icon: "Home" },
-  { id: 2, name: "Swimming Pool", icon: "Droplets" },
-  { id: 3, name: "Gymnasium", icon: "Dumbbell" },
-  { id: 4, name: "Kids Play Area", icon: "Gamepad" },
-  { id: 5, name: "Yoga Deck", icon: "Wind" },
-  { id: 6, name: "Jogging Track", icon: "Timer" },
+  { id: 1, name: "Automatic Lift", icon: "Home" },
+  { id: 2, name: "24×7 CCTV Surveillance", icon: "Home" },
+  { id: 3, name: "Manjeera Water Supply", icon: "Droplets" },
+  { id: 4, name: "Automatic Water Control System", icon: "Home" },
+  { id: 5, name: "Partial Power Backup", icon: "Wind" },
+  { id: 6, name: "Power Backup for Common Areas", icon: "Wind" },
+  { id: 7, name: "Sundeck", icon: "Wind" },
+  { id: 8, name: "Terrace Party Area", icon: "Home" },
+  { id: 9, name: "Rainwater Harvesting", icon: "Droplets" },
+  { id: 10, name: "Landscaped Setback Areas", icon: "Wind" },
 ];
+
 
 export const initialFloorPlans = [
   { id: 1, type: "2BHK", area: "1,150 sq.ft.", img: "https://images.unsplash.com/photo-1628192078696-6e47c1b8f106?w=600", project: "Sankalp Oasis" },

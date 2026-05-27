@@ -16,7 +16,14 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const projects = await Project.find({}).sort({ createdAt: -1 });
+    const { searchParams } = new URL(req.url);
+    const status = searchParams.get("status");
+    const query: any = {};
+    if (status) {
+      query.status = { $regex: new RegExp(`^${status}$`, "i") };
+    }
+
+    const projects = await Project.find(query).sort({ createdAt: -1 });
 
     const referer = req.headers.get("referer") || "";
     const isPublicRequest = !referer.includes("/admin");
@@ -49,6 +56,21 @@ export async function GET(req: NextRequest) {
 
       return p;
     });
+
+    if (!status) {
+      const statusOrder: Record<string, number> = {
+        "upcoming": 1,
+        "ongoing": 2,
+        "completed": 3
+      };
+
+      formattedProjects.sort((a, b) => {
+        const orderA = statusOrder[(a.status || "").toLowerCase()] || 99;
+        const orderB = statusOrder[(b.status || "").toLowerCase()] || 99;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      });
+    }
 
     return NextResponse.json(formattedProjects, { headers: corsHeaders });
 

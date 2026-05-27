@@ -95,7 +95,9 @@ console.log("Paginated Projects:", paginatedProjects);
         ...project,
         banners: project.banners || [project.image || ""],
         highlights: project.highlights || [""],
-        priceConfigurations: project.priceConfigurations || [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
+        priceConfigurations: (project.priceConfigurations && project.priceConfigurations.length > 0)
+          ? project.priceConfigurations
+          : [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
         amenities: project.amenities || [],
         landmarks: project.landmarks || [],
         brochures: project.brochures || [],
@@ -149,9 +151,23 @@ console.log("Paginated Projects:", paginatedProjects);
     if (e) e.preventDefault();
     if (!validateCurrentTab()) return;
 
+    // Filter out completely empty configuration rows
+    const cleanedPriceConfigurations = (formData.priceConfigurations || []).filter(config => 
+      config.configuration?.trim() ||
+      config.carpetArea?.trim() ||
+      config.superBuiltUpArea?.trim() ||
+      config.udsSqYards?.trim() ||
+      config.price?.trim()
+    );
+
+    // Filter out empty highlights
+    const cleanedHighlights = (formData.highlights || []).map(h => h.trim()).filter(Boolean);
+
     try {
       const projectData = {
         ...formData,
+        priceConfigurations: cleanedPriceConfigurations,
+        highlights: cleanedHighlights,
         image: formData.banners.filter(Boolean)[0] || "",
       };
 
@@ -253,7 +269,19 @@ console.log("Paginated Projects:", paginatedProjects);
     setFormData({ ...formData, landmarks: newL });
   };
 
-  const standardAmenitiesList = ['Clubhouse', 'Swimming Pool', 'Gymnasium', 'Kids Play Area', 'Yoga Deck', 'Jogging Track', 'Security 24x7', 'Power Backup'];
+  const standardAmenitiesList = [
+    'Automatic Lift',
+    '24×7 CCTV Surveillance',
+    'Manjeera Water Supply',
+    'Automatic Water Control System',
+    'Partial Power Backup',
+    'Power Backup for Common Areas',
+    'Sundeck',
+    'Terrace Party Area',
+    'Rainwater Harvesting',
+    'Landscaped Setback Areas'
+  ];
+
 
   return (
     <div className="space-y-6">

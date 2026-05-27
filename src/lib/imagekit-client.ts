@@ -15,8 +15,8 @@ export const uploadToImageKit = async (
       `📤 Original: ${file.name} - ${(file.size / 1024 / 1024).toFixed(2)} MB`
     );
 
-    // Compress if bigger than 2.5MB
-    if (file.size > 2.5 * 1024 * 1024) {
+    // Compress if it's an image and bigger than 2.5MB
+    if (file.type.startsWith("image/") && file.size > 2.5 * 1024 * 1024) {
       console.log("🔄 Compressing...");
 
       const imageCompression = (
