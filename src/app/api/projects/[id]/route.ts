@@ -12,6 +12,8 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+import mongoose from "mongoose";
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -20,8 +22,32 @@ export async function GET(
     await connectDB();
     const { id } = await params;
     const cleanId = id.trim();
-    const project = await Project.findById(cleanId);
-    
+    let project = null;
+
+    // 1. Try finding by valid MongoDB ObjectId
+    if (mongoose.Types.ObjectId.isValid(cleanId)) {
+      project = await Project.findById(cleanId);
+    }
+
+    // 2. Try finding by Title (Case-Insensitive)
+    if (!project) {
+      const decodedId = decodeURIComponent(cleanId);
+
+      // 2a. Exact match (case insensitive)
+      project = await Project.findOne({ title: { $regex: new RegExp(`^${decodedId}$`, 'i') } });
+
+      // 2b. Hyphens replaced by spaces (case insensitive)
+      if (!project) {
+        const unsluggedId = decodedId.replace(/-/g, ' ');
+        project = await Project.findOne({ title: { $regex: new RegExp(`^${unsluggedId}$`, 'i') } });
+      }
+    }
+
+    // 3. Fallback to older static IDs if applicable (e.g., "1", "2")
+    if (!project && !isNaN(Number(cleanId))) {
+      // Just in case there is some other custom ID mapping, but usually we just return null.
+    }
+
     if (!project) {
       return NextResponse.json({ error: "Project not found", debugId: id, cleanId, length: id.length }, { status: 404, headers: corsHeaders });
     }
@@ -36,12 +62,12 @@ export async function GET(
     if (isPublicRequest) {
       // SECURITY: Hide sensitive data for public website only
       (projectObj as any).floorPlansCount = projectObj.floorPlans?.length || 0;
-      projectObj.floorPlans = []; 
-      
+      projectObj.floorPlans = [];
+
       if (projectObj.priceConfigurations) {
         projectObj.priceConfigurations = projectObj.priceConfigurations.map((pc: any) => ({
           ...pc,
-          price: "Price on Request" 
+          price: "Price on Request"
         }));
       }
       projectObj.priceStarting = "Price on Request";
@@ -66,12 +92,12 @@ export async function PUT(
     const { _id, ...rest } = data;
     // Ensure brochures array exists to avoid accidental omission
     if (!rest.brochures) rest.brochures = [];
-    
+
     const project = await Project.findByIdAndUpdate(id, rest, {
       new: true,
       runValidators: true,
     });
-    
+
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404, headers: corsHeaders });
     }
