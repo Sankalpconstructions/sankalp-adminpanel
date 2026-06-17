@@ -27,10 +27,21 @@ export default function ContactsAdminPage() {
     try {
       // We fetch all for now, but apply local filtering for speed in the UI
       const res = await fetch("/api/leads");
-      const data = await res.json();
-      setLeads(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setLeads(data);
+        } else {
+          setLeads([]);
+          console.error("Expected array from leads API, got:", data);
+        }
+      } else {
+        setLeads([]);
+        console.error("Failed to fetch leads, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching leads:", error);
+      setLeads([]);
     } finally {
       setIsLoading(false);
     }

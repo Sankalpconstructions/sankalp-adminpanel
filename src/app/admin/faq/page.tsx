@@ -15,11 +15,21 @@ export default function FAQAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/faq");
-      const data = await res.json();
-      setFaqs(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setFaqs(data);
+        } else {
+          setFaqs([]);
+          console.error("Expected array from faq API, got:", data);
+        }
+      } else {
+        setFaqs([]);
+        console.error("Failed to fetch FAQs, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching FAQs:", error);
-      toast.error("Failed to save changes.");
+      setFaqs([]);
     } finally {
       setIsLoading(false);
     }

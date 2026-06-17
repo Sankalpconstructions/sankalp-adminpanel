@@ -20,10 +20,21 @@ export default function HeroBannerAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/herobanners");
-      const data = await res.json();
-      setSlides(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setSlides(data);
+        } else {
+          setSlides([]);
+          console.error("Expected array from herobanners API, got:", data);
+        }
+      } else {
+        setSlides([]);
+        console.error("Failed to fetch herobanners, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching herobanners:", error);
+      setSlides([]);
     } finally {
       setIsLoading(false);
     }

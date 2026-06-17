@@ -12,6 +12,7 @@ import Gallery from "@/models/Gallery";
 import HeroBanner from "@/models/HeroBanner";
 import CSR from "@/models/CSR";
 import AboutContent from "@/models/AboutContent";
+import SocialFeed from "@/models/SocialFeed";
 
 import { 
   initialProjects, 
@@ -60,6 +61,13 @@ export async function GET() {
       about: await checkAndSeed(AboutContent, [
         { title: "Company History", content: "Sankalp was founded in...", status: "Published" },
         { title: "Our Mission", content: "To deliver premium...", status: "Published" },
+      ]),
+      socialFeeds: await checkAndSeed(SocialFeed, [
+        { platform: "instagram", embedUrl: "https://www.instagram.com/p/C-reKCXzvT9/", title: "Instagram Post" },
+        { platform: "instagram", embedUrl: "https://www.instagram.com/p/DEg3xzATRnO/", title: "Instagram Post" },
+        { platform: "instagram", embedUrl: "https://www.instagram.com/reel/DYkGcZGzjHg/", title: "Instagram Reel" },
+        { platform: "instagram", embedUrl: "https://www.instagram.com/p/DXyajELkwJ8/", title: "Instagram Post" },
+        { platform: "instagram", embedUrl: "https://www.instagram.com/p/DXGdBCQk-1T/", title: "Instagram Post" }
       ])
     };
 

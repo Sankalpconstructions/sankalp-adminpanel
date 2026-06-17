@@ -23,11 +23,21 @@ export default function AmenitiesAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/amenities");
-      const data = await res.json();
-      setAmenities(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setAmenities(data);
+        } else {
+          setAmenities([]);
+          console.error("Expected array from amenities API, got:", data);
+        }
+      } else {
+        setAmenities([]);
+        console.error("Failed to fetch amenities, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching amenities:", error);
-      toast.error("Failed to save changes.");
+      setAmenities([]);
     } finally {
       setIsLoading(false);
     }

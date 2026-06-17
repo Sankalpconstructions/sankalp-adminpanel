@@ -17,11 +17,21 @@ export default function TeamAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/team");
-      const data = await res.json();
-      setMembers(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setMembers(data);
+        } else {
+          setMembers([]);
+          console.error("Expected array from team API, got:", data);
+        }
+      } else {
+        setMembers([]);
+        console.error("Failed to fetch team members, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching team members:", error);
-      toast.error("Failed to save changes.");
+      setMembers([]);
     } finally {
       setIsLoading(false);
     }

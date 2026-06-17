@@ -24,10 +24,21 @@ export default function GalleryAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/gallery");
-      const data = await res.json();
-      setGallery(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setGallery(data);
+        } else {
+          setGallery([]);
+          console.error("Expected array from gallery API, got:", data);
+        }
+      } else {
+        setGallery([]);
+        console.error("Failed to fetch gallery, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching gallery:", error);
+      setGallery([]);
     } finally {
       setIsLoading(false);
     }

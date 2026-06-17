@@ -15,11 +15,21 @@ export default function FloorPlansAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/floorplans");
-      const data = await res.json();
-      setFloorPlans(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setFloorPlans(data);
+        } else {
+          setFloorPlans([]);
+          console.error("Expected array from floorplans API, got:", data);
+        }
+      } else {
+        setFloorPlans([]);
+        console.error("Failed to fetch floorplans, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching floor plans:", error);
-      toast.error("Failed to save changes.");
+      setFloorPlans([]);
     } finally {
       setIsLoading(false);
     }

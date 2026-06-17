@@ -16,11 +16,21 @@ export default function RentalResidentialAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/rentals?type=residential");
-      const data = await res.json();
-      setProperties(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setProperties(data);
+        } else {
+          setProperties([]);
+          console.error("Expected array from rentals API, got:", data);
+        }
+      } else {
+        setProperties([]);
+        console.error("Failed to fetch rentals, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching residential rentals:", error);
-      toast.error("Failed to save changes.");
+      setProperties([]);
     } finally {
       setIsLoading(false);
     }

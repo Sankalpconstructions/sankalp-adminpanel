@@ -21,7 +21,8 @@ export async function GET(req: NextRequest) {
     // ====================== DYNAMIC BHK CONFIGURATIONS ======================
     if (getConfigs === "true") {
       const projects = await Project.find({
-        type: { $regex: /apartment/i }   // Case insensitive
+        type: { $regex: /apartment/i },   // Case insensitive
+        status: { $ne: "Completed" }
       }).select("priceConfigurations");
 
       const configSet = new Set<string>();
@@ -54,6 +55,7 @@ export async function GET(req: NextRequest) {
     if (type) {
       query.type = { $regex: type, $options: "i" };
     }
+    query.status = { $ne: "Completed" };
 
     const projectsData = await Project.find(query)
       .select("title type location status priceStarting priceConfigurations image")

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Menu, X, User, Globe } from "lucide-react";
+import { Menu, X, User, Globe, WifiOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Toaster } from "react-hot-toast";
@@ -11,6 +11,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+
+  // Connection state listeners
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    if (typeof window !== "undefined" && !window.navigator.onLine) {
+      setIsOffline(true);
+    }
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -126,6 +145,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </main>
       </div>
+
+      {/* Connection Lost Alert */}
+      <AnimatePresence>
+        {isOffline && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="fixed bottom-6 right-6 z-[200] max-w-sm w-full px-4"
+          >
+            <div className="bg-red-500 text-white rounded-2xl p-4 shadow-2xl flex items-center gap-4 border border-red-400/20">
+              <div className="p-3 bg-white/20 rounded-xl shrink-0 text-white flex items-center justify-center">
+                <WifiOff size={22} className="animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-extrabold text-xs uppercase tracking-widest">Offline Mode</h4>
+                <p className="text-[10px] text-white/80 font-medium mt-1 leading-normal">Your connection was lost. Reconnecting to server...</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

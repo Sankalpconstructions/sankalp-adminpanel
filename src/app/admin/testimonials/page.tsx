@@ -22,10 +22,21 @@ export default function TestimonialsAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/testimonials");
-      const data = await res.json();
-      setTestimonials(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setTestimonials(data);
+        } else {
+          setTestimonials([]);
+          console.error("Expected array from testimonials API, got:", data);
+        }
+      } else {
+        setTestimonials([]);
+        console.error("Failed to fetch testimonials, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching testimonials:", error);
+      setTestimonials([]);
     } finally {
       setIsLoading(false);
     }

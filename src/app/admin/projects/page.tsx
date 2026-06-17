@@ -19,10 +19,21 @@ export default function ProjectsAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/projects");
-      const data = await res.json();
-      setProjects(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setProjects(data);
+        } else {
+          setProjects([]);
+          console.error("Expected array from projects API, got:", data);
+        }
+      } else {
+        setProjects([]);
+        console.error("Failed to fetch projects, server returned status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching projects:", error);
+      setProjects([]);
     } finally {
       setIsLoading(false);
     }

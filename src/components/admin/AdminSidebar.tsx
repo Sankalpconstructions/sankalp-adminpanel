@@ -23,7 +23,9 @@ import {
   Star,
   Home,
   Store,
-  FileText
+  FileText,
+  Share2,
+  Settings
 } from "lucide-react";
 import { useAdmin } from "./AdminContext";
 import { motion } from "framer-motion";
@@ -48,10 +50,12 @@ const contentItems = [
   { name: "FAQ", icon: HelpCircle, href: "/admin/faq" },
   { name: "Floor Plans", icon: Layout, href: "/admin/floorplans" },
   { name: "Amenities", icon: Star, href: "/admin/amenities" },
+  { name: "Social Feed", icon: Share2, href: "/admin/social-feed" },
 ];
 
 const accountItems = [
   { name: "Admin Profile", icon: UserCircle, href: "/admin/profile" },
+  { name: "Settings", icon: Settings, href: "/admin/settings" },
 ];
 
 function AdminSidebar() {

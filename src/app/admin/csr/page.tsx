@@ -24,10 +24,21 @@ export default function CSRAdminPage() {
     setIsLoading(true);
     try {
       const res = await fetch("/api/csr", { cache: 'no-store' });
-      const data = await res.json();
-      setEntries(data);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setEntries(data);
+        } else {
+          setEntries([]);
+          console.error("Expected array from CSR API, got:", data);
+        }
+      } else {
+        setEntries([]);
+        console.error("Failed to fetch CSR entries, status:", res.status);
+      }
     } catch (error) {
       console.error("Error fetching CSR entries:", error);
+      setEntries([]);
     } finally {
       setIsLoading(false);
     }
