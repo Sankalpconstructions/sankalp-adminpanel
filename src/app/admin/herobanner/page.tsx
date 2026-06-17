@@ -6,8 +6,8 @@ import ImageUpload from "@/components/admin/ImageUpload";
 import toast from "react-hot-toast";
 
 
-type Slide = { id: number; title: string; subtitle: string; description: string; image: string; mobileImage: string; ctaText: string; isActive: boolean };
-const emptyForm = { title: "Sankalp Hero", subtitle: "Premium Quality", description: "Experience the best living spaces.", image: "", mobileImage: "", ctaText: "Explore Now", isActive: true };
+type Slide = { id: number; title: string; subtitle: string; description: string; image: string; mobileImage: string; ctaText: string; isActive: boolean; link?: string };
+const emptyForm = { title: "Sankalp Hero", subtitle: "Premium Quality", description: "Experience the best living spaces.", image: "", mobileImage: "", ctaText: "Explore Now", isActive: true, link: "" };
 
 export default function HeroBannerAdminPage() {
   const [slides, setSlides] = useState<any[]>([]);
@@ -35,7 +35,7 @@ export default function HeroBannerAdminPage() {
 
   const handleOpenModal = (item: Slide | null = null) => {
     setEditingItem(item);
-    setFormData(item ? { title: item.title, subtitle: item.subtitle, description: item.description, image: item.image, mobileImage: item.mobileImage || "", ctaText: item.ctaText, isActive: item.isActive } : { ...emptyForm });
+    setFormData(item ? { title: item.title, subtitle: item.subtitle, description: item.description, image: item.image, mobileImage: item.mobileImage || "", ctaText: item.ctaText, isActive: item.isActive, link: item.link || "" } : { ...emptyForm });
     setIsModalOpen(true);
   };
 
@@ -183,10 +183,15 @@ export default function HeroBannerAdminPage() {
                           </div>
                         </div>
                         <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 md:line-clamp-none">{slide.description}</p>
-                        <div className="mt-3">
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
                           <span className="inline-flex items-center gap-2 bg-[#711113]/10 text-[#711113] px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
                             CTA: &ldquo;{slide.ctaText}&rdquo;
                           </span>
+                          {slide.link && (
+                            <span className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest max-w-[200px] truncate">
+                              Link: {slide.link}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -263,6 +268,10 @@ export default function HeroBannerAdminPage() {
                     <button type="button" onClick={() => setFormData({ ...formData, isActive: !formData.isActive })} className={`w-full p-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${formData.isActive ? "bg-green-50 text-green-600 border border-green-100" : "bg-gray-50 text-gray-400 border border-gray-100"}`}>
                       {formData.isActive ? <><ToggleRight size={18} /> Active (Visible)</> : <><ToggleLeft size={18} /> Inactive (Hidden)</>}
                     </button>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest ml-1">Redirect Link / URL (Optional)</label>
+                    <input value={formData.link} onChange={e => setFormData({ ...formData, link: e.target.value })} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2]" placeholder="e.g. /projects or https://..." />
                   </div>
                 </div>
                 <div className="flex gap-4 pt-2">

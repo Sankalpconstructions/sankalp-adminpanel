@@ -6,6 +6,13 @@ import ImageUpload from "@/components/admin/ImageUpload";
 import toast from "react-hot-toast";
 import { deleteFromImageKit } from "@/lib/imagekit-client";
 
+const getYoutubeThumbnail = (url?: string) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? `https://img.youtube.com/vi/${match[2]}/maxresdefault.jpg` : null;
+};
+
 export default function CSRAdminPage() {
   const [entries, setEntries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -16,7 +23,7 @@ export default function CSRAdminPage() {
   const fetchEntries = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/csr");
+      const res = await fetch("/api/csr", { cache: 'no-store' });
       const data = await res.json();
       setEntries(data);
     } catch (error) {
@@ -33,10 +40,11 @@ export default function CSRAdminPage() {
   const [formData, setFormData] = useState({
     title: "",
     date: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-    time: "10:00 AM - 5:00 PM",
     shortDesc: "",
     longDesc: "",
-    images: [] as string[]
+    images: [] as string[],
+    youtubeLink: "",
+    instagramLink: ""
   });
 
   const filteredEntries = entries.filter(e => e.title.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -46,7 +54,9 @@ export default function CSRAdminPage() {
       setEditingEntry(entry);
       setFormData({ 
         ...entry,
-        images: entry.images || []
+        images: entry.images || [],
+        youtubeLink: entry.youtubeLink || "",
+        instagramLink: entry.instagramLink || ""
       });
     } else {
       setEditingEntry(null);
@@ -56,7 +66,9 @@ export default function CSRAdminPage() {
         time: "10:00 AM - 5:00 PM",
         shortDesc: "",
         longDesc: "",
-        images: []
+        images: [],
+        youtubeLink: "",
+        instagramLink: ""
       });
     }
     setIsFormOpen(true);
@@ -99,8 +111,8 @@ export default function CSRAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.images.length === 0) {
-      toast.error("Please upload at least one image for the event highlight.");
+    if (formData.images.length === 0 && !formData.youtubeLink && !formData.instagramLink) {
+      toast.error("Please provide at least one image, YouTube link, or Instagram link.");
       return;
     }
 
@@ -116,6 +128,10 @@ export default function CSRAdminPage() {
           const updated = await res.json();
           setEntries(entries.map(e => (e._id || e.id) === id ? updated : e));
           toast.success("Event updated successfully!");
+        } else {
+          const errData = await res.json();
+          toast.error("Failed to update event: " + (errData.error || res.statusText));
+          return;
         }
       } else {
         const res = await fetch("/api/csr", {
@@ -127,6 +143,10 @@ export default function CSRAdminPage() {
           const created = await res.json();
           setEntries([created, ...entries]);
           toast.success("Event added successfully!");
+        } else {
+          const errData = await res.json();
+          toast.error("Failed to add event: " + (errData.error || res.statusText));
+          return;
         }
       }
       setIsFormOpen(false);
@@ -178,10 +198,10 @@ export default function CSRAdminPage() {
                   {filteredEntries.map((entry) => (
                     <motion.div layout key={entry._id || entry.id} className="bg-white rounded-2xl border border-gray-200/50 shadow-sm overflow-hidden group hover:shadow-xl transition-all h-full flex flex-col">
                       <div className="h-40 relative">
-                        <img src={entry.images[0]} alt={entry.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={entry.images?.[0] || getYoutubeThumbnail(entry.youtubeLink) || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200'} alt={entry.title || "Event Highlight"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         <div className="absolute top-3 right-3 bg-white/90 px-2 py-1 rounded text-[9px] font-bold text-[#711113] uppercase tracking-widest">{entry.date}</div>
                         <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-sm px-2 py-1 rounded text-[9px] font-bold text-white uppercase tracking-widest flex items-center gap-1">
-                          <ImageIcon size={10} /> {entry.images.length} Photos
+                          <ImageIcon size={10} /> {entry.images?.length || 0} Photos
                         </div>
                       </div>
                       <div className="p-5 flex-1 flex flex-col">
@@ -226,8 +246,8 @@ export default function CSRAdminPage() {
                 <section className="bg-white rounded-2xl border border-gray-200/50 shadow-sm p-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
-                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Event Title *</label>
-                      <input required value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] text-sm" placeholder="e.g. Annual Strategy Meet 2025" />
+                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Event Title</label>
+                      <input value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] text-sm" placeholder="e.g. Annual Strategy Meet 2025" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -243,12 +263,22 @@ export default function CSRAdminPage() {
 
                   <div className="space-y-6">
                     <div>
-                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Short Description (Card Summary) *</label>
-                      <textarea required rows={2} value={formData.shortDesc} onChange={(e) => setFormData({...formData, shortDesc: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none text-sm" placeholder="A brief summary for the grid card..."></textarea>
+                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Short Description (Card Summary)</label>
+                      <textarea rows={2} value={formData.shortDesc} onChange={(e) => setFormData({...formData, shortDesc: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none text-sm" placeholder="A brief summary for the grid card..."></textarea>
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Detailed Story (Modal Content) *</label>
-                      <textarea required rows={8} value={formData.longDesc} onChange={(e) => setFormData({...formData, longDesc: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none text-sm leading-relaxed" placeholder="Tell the full story of the event here..."></textarea>
+                      <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Detailed Story (Modal Content)</label>
+                      <textarea rows={8} value={formData.longDesc} onChange={(e) => setFormData({...formData, longDesc: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] resize-none text-sm leading-relaxed" placeholder="Tell the full story of the event here..."></textarea>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">YouTube Video Link (Optional)</label>
+                        <input value={formData.youtubeLink} onChange={(e) => setFormData({...formData, youtubeLink: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] text-sm" placeholder="https://youtube.com/watch?v=..." />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold uppercase text-gray-400 tracking-widest block mb-2">Instagram Post Link (Optional)</label>
+                        <input value={formData.instagramLink} onChange={(e) => setFormData({...formData, instagramLink: e.target.value})} className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:border-[#29B1D2] text-sm" placeholder="https://instagram.com/p/..." />
+                      </div>
                     </div>
                   </div>
                 </section>
@@ -283,7 +313,7 @@ export default function CSRAdminPage() {
 
                   {formData.images.length === 0 && (
                     <div className="mt-4 p-8 border-2 border-dashed border-gray-100 rounded-xl text-center">
-                      <p className="text-[10px] font-bold uppercase text-gray-300 tracking-widest leading-loose">No photos uploaded yet.<br/>Upload at least one thumbnail.</p>
+                      <p className="text-[10px] font-bold uppercase text-gray-300 tracking-widest leading-loose">No photos uploaded yet.</p>
                     </div>
                   )}
                 </section>

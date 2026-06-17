@@ -7,17 +7,21 @@ export interface ICSR extends Document {
   shortDesc: string;
   longDesc: string;
   images: string[]; // Array of ImageKit URLs
+  youtubeLink?: string;
+  instagramLink?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const CSRSchema: Schema = new Schema({
-  title: { type: String, required: true },
-  date: { type: String, required: true },
-  time: { type: String, required: true },
-  shortDesc: { type: String, required: true },
-  longDesc: { type: String, required: true },
-  images: { type: [String], default: [] }
+  title: { type: String, default: "" },
+  date: { type: String, default: "" },
+  time: { type: String, default: "" },
+  shortDesc: { type: String, default: "" },
+  longDesc: { type: String, default: "" },
+  images: { type: [String], default: [] },
+  youtubeLink: { type: String, required: false },
+  instagramLink: { type: String, required: false }
 }, {
   timestamps: true
 });
@@ -26,4 +30,5 @@ if (mongoose.models.CSR) {
   delete mongoose.models.CSR;
 }
 
+delete mongoose.models.CSR;
 export default mongoose.models.CSR || mongoose.model<ICSR>('CSR', CSRSchema);

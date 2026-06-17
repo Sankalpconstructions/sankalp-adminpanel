@@ -8,6 +8,7 @@ export interface IHeroBanner extends Document {
   mobileImage: string; // Mobile Image
   ctaText: string;
   isActive: boolean;
+  link?: string;
 }
 
 const HeroBannerSchema: Schema = new Schema({
@@ -17,7 +18,9 @@ const HeroBannerSchema: Schema = new Schema({
   image: { type: String, required: true },
   mobileImage: { type: String, required: true },
   ctaText: { type: String, required: true },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  link: { type: String, required: false, default: "" }
 });
 
+delete mongoose.models.HeroBanner;
 export default mongoose.models.HeroBanner || mongoose.model<IHeroBanner>('HeroBanner', HeroBannerSchema);

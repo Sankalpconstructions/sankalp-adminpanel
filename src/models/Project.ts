@@ -16,6 +16,7 @@ export interface IProject extends Document {
   priceStarting?: string;
   image?: string; 
   banners: string[];
+  mobileBanners: string[];
   highlights: string[];
   priceConfigurations: {
     configuration: string;
@@ -55,6 +56,7 @@ const ProjectSchema: Schema = new Schema({
   priceStarting: { type: String },
   image: { type: String },
   banners: { type: [String], default: [] },
+  mobileBanners: { type: [String], default: [] },
   highlights: { type: [String], default: [] },
   priceConfigurations: [{
     configuration: { type: String },

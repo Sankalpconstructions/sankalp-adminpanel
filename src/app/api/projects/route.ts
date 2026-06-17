@@ -91,6 +91,7 @@ export async function POST(req: NextRequest) {
 const { id, _id, ...rest } = data;
 
 rest.banners = (rest.banners || []).filter(Boolean);
+rest.mobileBanners = (rest.mobileBanners || []).filter(Boolean);
 
 // derive image ALWAYS from backend
 rest.image = rest.banners[0] || "";

@@ -60,6 +60,7 @@ export default function ProjectsAdminPage() {
     amenitiesCount: "",
     priceStarting: "",
     banners: [] as string[],
+    mobileBanners: [] as string[],
     highlights: [""] as string[],
     priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
     amenities: [] as string[],
@@ -92,6 +93,7 @@ export default function ProjectsAdminPage() {
       setFormData({
         ...project,
         banners: project.banners || [project.image || ""],
+        mobileBanners: project.mobileBanners || [],
         highlights: project.highlights || [""],
         priceConfigurations: (project.priceConfigurations && project.priceConfigurations.length > 0)
           ? project.priceConfigurations
@@ -116,6 +118,7 @@ export default function ProjectsAdminPage() {
         rera: "",
         status: "Upcoming", amenitiesCount: "", priceStarting: "",
         banners: [],
+        mobileBanners: [],
         highlights: [""],
         priceConfigurations: [{ configuration: "", carpetArea: "", superBuiltUpArea: "", udsSqYards: "", price: "" }],
         amenities: [],
@@ -167,6 +170,7 @@ export default function ProjectsAdminPage() {
         priceConfigurations: cleanedPriceConfigurations,
         highlights: cleanedHighlights,
         image: formData.banners.filter(Boolean)[0] || "",
+        mobileBanners: formData.mobileBanners.filter(Boolean),
       };
 
       if (editingProject) {
@@ -509,6 +513,17 @@ export default function ProjectsAdminPage() {
                         onChange={(urls) => setFormData({
                           ...formData,
                           banners: (Array.isArray(urls) ? urls : [urls]).filter(Boolean)
+                        })}
+                        multiple={true}
+                        maxFiles={3}
+                      />
+
+                      <ImageUpload
+                        label="Mobile Banner Images (Max 3)"
+                        value={formData.mobileBanners}
+                        onChange={(urls) => setFormData({
+                          ...formData,
+                          mobileBanners: (Array.isArray(urls) ? urls : [urls]).filter(Boolean)
                         })}
                         multiple={true}
                         maxFiles={3}

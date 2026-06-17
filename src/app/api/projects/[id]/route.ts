@@ -92,6 +92,8 @@ export async function PUT(
     const { _id, ...rest } = data;
     // Ensure brochures array exists to avoid accidental omission
     if (!rest.brochures) rest.brochures = [];
+    rest.banners = (rest.banners || []).filter(Boolean);
+    rest.mobileBanners = (rest.mobileBanners || []).filter(Boolean);
 
     const project = await Project.findByIdAndUpdate(id, rest, {
       new: true,
