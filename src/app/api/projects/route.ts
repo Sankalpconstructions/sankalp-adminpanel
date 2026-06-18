@@ -31,8 +31,9 @@ export async function GET(req: NextRequest) {
     const formattedProjects = projects.map(project => {
       const p = project.toObject();
 
+  const firstGal = p.gallery?.[0];
   const mainImage =
-  p.gallery?.[0] ||
+  (typeof firstGal === 'string' ? firstGal : firstGal?.desktop || firstGal?.mobile) ||
   p.floorPlans?.[0] ||
   p.banners?.[0] ||
   "";

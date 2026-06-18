@@ -78,7 +78,7 @@ export default function ProjectsAdminPage() {
     landmarks: [] as { type: string; text: string }[],
     brochures: [] as { name: string, url: string }[],
     floorPlans: [] as string[],
-    gallery: [] as string[],
+    gallery: [] as { desktop: string; mobile: string }[],
     mapSrc: ""
   });
 
@@ -113,7 +113,15 @@ export default function ProjectsAdminPage() {
         landmarks: project.landmarks || [],
         brochures: project.brochures || [],
         floorPlans: project.floorPlans || [],
-        gallery: project.gallery || [],
+        gallery: (project.gallery || []).map((img: any) => {
+          if (typeof img === 'string') {
+            return { desktop: img, mobile: img };
+          }
+          return {
+            desktop: img.desktop || "",
+            mobile: img.mobile || ""
+          };
+        }),
         mapSrc: project.mapSrc || "",
         status: project.status || "Ongoing",
         amenitiesCount: "10+",
@@ -136,7 +144,7 @@ export default function ProjectsAdminPage() {
         landmarks: [],
         brochures: [],
         floorPlans: [],
-        gallery: [],
+        gallery: [] as { desktop: string; mobile: string }[],
         mapSrc: ""
       });
     }
@@ -161,7 +169,11 @@ export default function ProjectsAdminPage() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!validateCurrentTab()) return;
+    if (!formData.title) {
+      toast.error("Please provide a project title in the Overview tab.");
+      setActiveTab(0);
+      return;
+    }
 
     // Filter out completely empty configuration rows
     const cleanedPriceConfigurations = (formData.priceConfigurations || []).filter(config =>
@@ -172,14 +184,26 @@ export default function ProjectsAdminPage() {
       config.price?.trim()
     );
 
-    // Filter out empty highlights
+    // Filter out completely empty highlights
     const cleanedHighlights = (formData.highlights || []).map(h => h.trim()).filter(Boolean);
+
+    // Filter out completely empty gallery entries
+    const cleanedGallery = (formData.gallery || []).filter(item => item.desktop?.trim() || item.mobile?.trim());
+
+    // Validate that remaining entries have BOTH desktop and mobile images
+    const hasIncompleteGallery = cleanedGallery.some(item => !item.desktop?.trim() || !item.mobile?.trim());
+    if (hasIncompleteGallery) {
+      toast.error("Both Desktop (Big Screen) and Mobile (Small Screen) images are mandatory for all Visual Tour items.");
+      setActiveTab(4); // Switch to Plans & Gallery tab
+      return;
+    }
 
     try {
       const projectData = {
         ...formData,
         priceConfigurations: cleanedPriceConfigurations,
         highlights: cleanedHighlights,
+        gallery: cleanedGallery,
         image: formData.banners.filter(Boolean)[0] || "",
         mobileBanners: formData.mobileBanners.filter(Boolean),
       };
@@ -424,19 +448,19 @@ export default function ProjectsAdminPage() {
               <div className="flex justify-between relative z-10 w-full max-w-4xl mx-auto">
                 {tabNames.map((tab, idx) => {
                   const isActive = activeTab === idx;
-                  const isCompleted = activeTab > idx;
                   return (
                     <div key={idx} className="flex flex-col items-center bg-white px-2 cursor-default">
                       <button
                         onClick={() => {
-                          if (isCompleted) setActiveTab(idx);
+                          setActiveTab(idx);
                         }}
-                        className={`w-10 h-10 pos-relative rounded-full flex items-center justify-center font-bold text-xs transition-all ${isActive ? 'bg-[#711113] text-white shadow-lg shadow-[#711113]/30 scale-110'
-                          : isCompleted ? 'bg-emerald-500 text-white border-2 border-white cursor-pointer hover:bg-emerald-600'
-                            : 'bg-white border-2 border-gray-200 text-gray-400 cursor-not-allowed'
+                        className={`w-10 h-10 pos-relative rounded-full flex items-center justify-center font-bold text-xs transition-all ${
+                          isActive 
+                            ? 'bg-[#711113] text-white shadow-lg shadow-[#711113]/30 scale-110'
+                            : 'bg-white border-2 border-gray-200 text-gray-600 cursor-pointer hover:bg-rose-50 hover:border-[#711113]/30 hover:text-[#711113]'
                           }`}
                       >
-                        {isCompleted ? <Check size={16} /> : idx + 1}
+                        {idx + 1}
                       </button>
                       <span className={`text-[9px] font-bold uppercase tracking-widest mt-3 transition-colors ${isActive ? 'text-[#711113]' : 'text-gray-400'}`}>
                         {tab.name}
@@ -741,23 +765,91 @@ export default function ProjectsAdminPage() {
                       </div>
 
                       {/* Floor Plans Upload */}
-                      <ImageUpload
-                        label="Project Floor Plans"
-                        value={formData.floorPlans}
-                        onChange={(urls) => setFormData({ ...formData, floorPlans: urls as string[] })}
-                        multiple={true}
-                        maxFiles={10}
-                      />
+                      <div className="md:col-span-1">
+                        <ImageUpload
+                          label="Project Floor Plans"
+                          value={formData.floorPlans}
+                          onChange={(urls) => setFormData({ ...formData, floorPlans: urls as string[] })}
+                          multiple={true}
+                          maxFiles={10}
+                        />
+                      </div>
 
+                      {/* Visual Tour / Gallery Editor */}
+                      <div className="md:col-span-3 border-t border-gray-100 pt-6 mt-2">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="text-xs font-bold text-gray-800 uppercase tracking-widest ml-1">Visual Tour Images (Gallery)</h3>
+                            <p className="text-[10px] text-gray-400 mt-1 ml-1">Upload both Desktop and Mobile views. Both are mandatory.</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setFormData({
+                              ...formData,
+                              gallery: [...formData.gallery, { desktop: "", mobile: "" }]
+                            })}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#711113]/5 hover:bg-[#711113]/10 text-[#711113] rounded-lg font-bold text-[10px] uppercase tracking-wider transition-colors"
+                          >
+                            + Add Image Pair
+                          </button>
+                        </div>
 
-                      {/* Gallery Upload */}
-                      <ImageUpload
-                        label="Visual Tour Images"
-                        value={formData.gallery}
-                        onChange={(urls) => setFormData({ ...formData, gallery: urls as string[] })}
-                        multiple={true}
-                        maxFiles={20}
-                      />
+                        {formData.gallery.length === 0 ? (
+                          <div className="p-10 text-center bg-gray-50 border border-gray-200 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2">
+                            <ImageIcon size={32} className="text-gray-300" />
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">No visual tour images added yet.</p>
+                            <p className="text-[10px] text-gray-400">Click the button above to add your first image pair.</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {formData.gallery.map((item, idx) => (
+                              <div key={idx} className="relative p-6 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-4 hover:shadow-md transition-shadow group/card">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormData({
+                                      ...formData,
+                                      gallery: formData.gallery.filter((_, i) => i !== idx)
+                                    });
+                                  }}
+                                  className="absolute top-4 right-4 p-2 bg-rose-50 hover:bg-[#711113] text-[#711113] hover:text-white rounded-lg transition-all z-10 shadow-sm"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                                
+                                <div className="text-xs font-bold text-[#711113] border-b border-gray-50 pb-2">
+                                  Visual Tour Entry #{idx + 1}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <ImageUpload
+                                      label="Desktop Image"
+                                      value={item.desktop}
+                                      onChange={(url) => {
+                                        const newG = [...formData.gallery];
+                                        newG[idx] = { ...newG[idx], desktop: url as string };
+                                        setFormData({ ...formData, gallery: newG });
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <ImageUpload
+                                      label="Mobile Image"
+                                      value={item.mobile}
+                                      onChange={(url) => {
+                                        const newG = [...formData.gallery];
+                                        newG[idx] = { ...newG[idx], mobile: url as string };
+                                        setFormData({ ...formData, gallery: newG });
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
                     </div>
                   </motion.div>

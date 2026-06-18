@@ -35,7 +35,7 @@ export interface IProject extends Document {
     url: string;
   }[];
   floorPlans: string[];
-  gallery: string[];
+  gallery: (string | { desktop: string; mobile: string })[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,7 +75,7 @@ const ProjectSchema: Schema = new Schema({
     url: { type: String }
   }],
   floorPlans: { type: [String], default: [] },
-  gallery: { type: [String], default: [] }
+  gallery: { type: [Schema.Types.Mixed], default: [] }
 }, {
   timestamps: true
 });
