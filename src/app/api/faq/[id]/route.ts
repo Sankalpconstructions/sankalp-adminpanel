@@ -17,6 +17,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     await connectDB();
     const { id } = await params;
     const data = await req.json();
+    if (typeof data.order === 'number') {
+      const existing = await FAQ.findOne({ order: data.order, _id: { $ne: id } });
+      if (existing) {
+        return NextResponse.json({ error: `Order number ${data.order} is already taken by another FAQ.` }, { status: 400, headers: corsHeaders });
+      }
+    }
     const faq = await FAQ.findByIdAndUpdate(id, data, { new: true });
     return NextResponse.json(faq, { headers: corsHeaders });
   } catch (error: any) {

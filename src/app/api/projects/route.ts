@@ -44,7 +44,6 @@ export async function GET(req: NextRequest) {
         // security masking for public
 
         (p as any).floorPlansCount = p.floorPlans?.length || 0;
-        p.floorPlans = [];
         p.priceStarting = "Price on Request";
 
         if (p.priceConfigurations) {

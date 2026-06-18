@@ -62,7 +62,6 @@ export async function GET(
     if (isPublicRequest) {
       // SECURITY: Hide sensitive data for public website only
       (projectObj as any).floorPlansCount = projectObj.floorPlans?.length || 0;
-      projectObj.floorPlans = [];
 
       if (projectObj.priceConfigurations) {
         projectObj.priceConfigurations = projectObj.priceConfigurations.map((pc: any) => ({

@@ -87,9 +87,14 @@ export default function FAQAdminPage() {
         });
         if (res.ok) {
           const updated = await res.json();
-          setFaqs(faqs.map(f => (f._id || f.id) === id ? updated : f));
-        
+          const updatedList = faqs.map(f => (f._id || f.id) === id ? updated : f);
+          updatedList.sort((a, b) => (a.order || 0) - (b.order || 0));
+          setFaqs(updatedList);
           toast.success("FAQ updated successfully!");
+          setIsFormOpen(false);
+        } else {
+          const errData = await res.json();
+          toast.error(errData.error || "Failed to update FAQ.");
         }
       } else {
         const res = await fetch("/api/faq", {
@@ -99,12 +104,16 @@ export default function FAQAdminPage() {
         });
         if (res.ok) {
           const created = await res.json();
-          setFaqs([...faqs, created]);
-        
+          const updatedList = [...faqs, created];
+          updatedList.sort((a, b) => (a.order || 0) - (b.order || 0));
+          setFaqs(updatedList);
           toast.success("FAQ added successfully!");
+          setIsFormOpen(false);
+        } else {
+          const errData = await res.json();
+          toast.error(errData.error || "Failed to add FAQ.");
         }
       }
-      setIsFormOpen(false);
     } catch (error) {
       console.error("Error saving FAQ:", error);
       toast.error("Failed to save changes.");

@@ -26,6 +26,12 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
     const data = await req.json();
+    if (typeof data.order === 'number') {
+      const existing = await FAQ.findOne({ order: data.order });
+      if (existing) {
+        return NextResponse.json({ error: `Order number ${data.order} is already taken by another FAQ.` }, { status: 400, headers: corsHeaders });
+      }
+    }
     const faq = await FAQ.create(data);
     return NextResponse.json(faq, { status: 201, headers: corsHeaders });
   } catch (error: any) {

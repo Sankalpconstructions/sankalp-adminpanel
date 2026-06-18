@@ -17,7 +17,7 @@ export async function OPTIONS() {
 export async function GET() {
   try {
     await connectDB();
-    const faqs = await FAQ.find({}).sort({ createdAt: -1 });
+    const faqs = await FAQ.find({}).sort({ order: 1, createdAt: -1 });
 
     return NextResponse.json(faqs, { 
       headers: corsHeaders 
