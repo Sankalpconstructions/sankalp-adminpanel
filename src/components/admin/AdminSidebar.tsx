@@ -39,6 +39,8 @@ const menuItems = [
   { name: "Contact Hub", icon: Mail, href: "/admin/contacts" },
   { name: "Rental Residential", icon: Home, href: "/admin/rental-residential" },
   { name: "Rental Commercial", icon: Store, href: "/admin/rental-commercial" },
+  { name: "Resale Residential", icon: Home, href: "/admin/resale-residential" },
+  { name: "Resale Commercial", icon: Store, href: "/admin/resale-commercial" },
 ];
 
 const contentItems = [
