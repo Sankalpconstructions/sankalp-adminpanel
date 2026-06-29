@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { Image as ImageIcon, RefreshCw, X } from "lucide-react";
 import { uploadToImageKit, deleteFromImageKit } from "@/lib/imagekit-client";
 import toast from "react-hot-toast";
@@ -21,6 +21,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   className = "",
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const uniqueId = useId();
+  const inputId = `image-upload-${uniqueId}`;
   console.log("Current value:", value);
   const onFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -89,12 +91,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
           accept="image/*"
           multiple={multiple}
           className="hidden"
-          id={`image-upload-${label?.replace(/\s+/g, '-').toLowerCase() || 'default'}`}
+          id={inputId}
           onChange={onFileUpload}
           disabled={isUploading}
         />
         <label
-          htmlFor={`image-upload-${label?.replace(/\s+/g, '-').toLowerCase() || 'default'}`}
+          htmlFor={inputId}
           className="mt-1 px-4 py-1.5 bg-white border border-gray-200 font-bold uppercase text-[10px] tracking-widest text-gray-600 rounded-lg shadow-sm cursor-pointer hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all"
         >
           {isUploading ? "Processing..." : "Browse Files"}
