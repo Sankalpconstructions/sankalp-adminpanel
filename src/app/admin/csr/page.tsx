@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, Check, ArrowLeft, HeartHandshake, RefreshCw, Calendar, Clock, Image as ImageIcon, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -14,6 +15,8 @@ const getYoutubeThumbnail = (url?: string) => {
 };
 
 export default function CSRAdminPage() {
+  const { confirm } = useConfirm();
+
   const [entries, setEntries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,7 +107,7 @@ export default function CSRAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this event highlight?")) {
+    if (await confirm("Are you sure you want to delete this event highlight?")) {
       try {
         const res = await fetch(`/api/csr/${id}`, { method: "DELETE" });
         if (res.ok) {

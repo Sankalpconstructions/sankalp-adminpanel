@@ -6,6 +6,7 @@ import { Menu, X, User, Globe, WifiOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Toaster } from "react-hot-toast";
+import { ConfirmProvider } from "@/context/ConfirmContext";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -141,7 +142,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           className="flex-1 overflow-y-auto chat-scroll p-4 sm:p-6 md:p-8 lg:p-10 transition-all scroll-smooth"
         >
           <div className="max-w-7xl mx-auto">
-            {children}
+            <ConfirmProvider>
+              {children}
+            </ConfirmProvider>
           </div>
         </main>
       </div>

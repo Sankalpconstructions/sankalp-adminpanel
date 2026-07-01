@@ -24,6 +24,8 @@ const nextConfig: NextConfig = {
       exclude: ["error", "warn"], // keeps important logs
     },
   },
+  // Added to allow testing on phone
+  allowedDevOrigins: ["10.143.240.53"],
 };
 
 export default nextConfig;

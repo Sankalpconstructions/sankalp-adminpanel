@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, X, Check, Newspaper, Calendar, Tag, RefreshCw, User, Clock, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -8,6 +9,8 @@ import toast from "react-hot-toast";
 const CATEGORIES = ["Insights", "Market Trends", "Guides"];
 
 export default function BlogsAdminPage() {
+  const { confirm } = useConfirm();
+
   const [blogs, setBlogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,7 +77,7 @@ export default function BlogsAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this blog post?")) {
+    if (await confirm("Are you sure you want to delete this blog post?")) {
       try {
         const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
         if (res.ok) {

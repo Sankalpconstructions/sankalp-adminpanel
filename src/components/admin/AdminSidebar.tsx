@@ -35,7 +35,7 @@ const menuItems = [
   { name: "Brand Story", icon: Sparkles, href: "/admin/brand-story" },
   { name: "Projects", icon: Building2, href: "/admin/projects" },
   { name: "CSR", icon: HeartHandshake, href: "/admin/csr" },
-  // { name: "Blog Posts", icon: Newspaper, href: "/admin/blog" },
+  { name: "Blog Posts", icon: Newspaper, href: "/admin/blog" },
   { name: "Contact Hub", icon: Mail, href: "/admin/contacts" },
   { name: "Rental Residential", icon: Home, href: "/admin/rental-residential" },
   { name: "Rental Commercial", icon: Store, href: "/admin/rental-commercial" },

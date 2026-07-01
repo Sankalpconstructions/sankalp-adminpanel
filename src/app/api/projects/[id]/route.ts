@@ -26,7 +26,7 @@ export async function GET(
 
     // 1. Try finding by valid MongoDB ObjectId
     if (mongoose.Types.ObjectId.isValid(cleanId)) {
-      project = await Project.findById(cleanId);
+      project = await Project.findById(cleanId).lean();
     }
 
     // 2. Try finding by Title (Case-Insensitive)
@@ -34,12 +34,12 @@ export async function GET(
       const decodedId = decodeURIComponent(cleanId);
 
       // 2a. Exact match (case insensitive)
-      project = await Project.findOne({ title: { $regex: new RegExp(`^${decodedId}$`, 'i') } });
+      project = await Project.findOne({ title: { $regex: new RegExp(`^${decodedId}$`, 'i') } }).lean();
 
       // 2b. Hyphens replaced by spaces (case insensitive)
       if (!project) {
         const unsluggedId = decodedId.replace(/-/g, ' ');
-        project = await Project.findOne({ title: { $regex: new RegExp(`^${unsluggedId}$`, 'i') } });
+        project = await Project.findOne({ title: { $regex: new RegExp(`^${unsluggedId}$`, 'i') } }).lean();
       }
     }
 
@@ -52,7 +52,7 @@ export async function GET(
       return NextResponse.json({ error: "Project not found", debugId: id, cleanId, length: id.length }, { status: 404, headers: corsHeaders });
     }
 
-    const projectObj = project.toObject();
+    const projectObj = project as any;
 
     // DETECTION: Check if the request is coming from the Admin Panel or the Public Website
     const referer = req.headers.get("referer") || "";

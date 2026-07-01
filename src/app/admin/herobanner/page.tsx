@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, X, Check, Layers, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -10,6 +11,8 @@ type Slide = { id: number; title: string; subtitle: string; description: string;
 const emptyForm = { title: "Sankalp Hero", subtitle: "Premium Quality", description: "Experience the best living spaces.", image: "", mobileImage: "", ctaText: "Explore Now", isActive: true, link: "" };
 
 export default function HeroBannerAdminPage() {
+  const { confirm } = useConfirm();
+
   const [slides, setSlides] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,7 +54,7 @@ export default function HeroBannerAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this banner slide?")) {
+    if (await confirm("Delete this banner slide?")) {
       try {
         const res = await fetch(`/api/herobanners/${id}`, { method: "DELETE" });
         if (res.ok) {

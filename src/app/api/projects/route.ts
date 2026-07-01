@@ -18,18 +18,24 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
+    const minimal = searchParams.get("minimal") === "true";
     const query: any = {};
     if (status) {
       query.status = { $regex: new RegExp(`^${status}$`, "i") };
     }
 
-    const projects = await Project.find(query).sort({ createdAt: -1 });
+    let dbQuery = Project.find(query).sort({ createdAt: -1 }).lean();
+    if (minimal) {
+      dbQuery = dbQuery.select("_id title location type status possessionDate image banners mobileBanners createdAt priceConfigurations");
+    }
+
+    const projects = await dbQuery;
 
     const referer = req.headers.get("referer") || "";
     const isPublicRequest = !referer.includes("/admin");
 
     const formattedProjects = projects.map(project => {
-      const p = project.toObject();
+      const p = project as any;
 
   const firstGal = p.gallery?.[0];
   const mainImage =

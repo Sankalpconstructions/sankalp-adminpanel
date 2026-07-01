@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Trash2, Search, Mail, Phone, User, Calendar, MessageSquare, CheckCircle, Clock, AlertCircle, RefreshCw, Filter, X, Save, History as HistoryIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 export default function ContactsAdminPage() {
+  const { confirm } = useConfirm();
+
   const [leads, setLeads] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLead, setSelectedLead] = useState<any>(null);
@@ -72,7 +75,7 @@ export default function ContactsAdminPage() {
   );
 
   const handleDelete = async (id: string) => {
-    if (confirm("Permanently delete this inquiry?")) {
+    if (await confirm("Permanently delete this inquiry?")) {
       try {
         const res = await fetch(`/api/leads/${id}`, { method: "DELETE" });
         if (res.ok) {
@@ -137,7 +140,7 @@ export default function ContactsAdminPage() {
     e.stopPropagation();
     if (!selectedLead) return;
     
-    if (confirm("Reset this lead? This will permanently clear all history and set status back to 'New'.")) {
+    if (await confirm("Reset this lead? This will permanently clear all history and set status back to 'New'.")) {
       setIsUpdating(true);
       const leadId = selectedLead._id || selectedLead.id;
       

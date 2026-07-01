@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, X, Check, Map, Maximize, Building, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 export default function FloorPlansAdminPage() {
+  const { confirm } = useConfirm();
+
   const [floorPlans, setFloorPlans] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,7 +67,7 @@ export default function FloorPlansAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this floor plan?")) {
+    if (await confirm("Delete this floor plan?")) {
       try {
         const res = await fetch(`/api/floorplans/${id}`, { method: "DELETE" });
         if (res.ok) {

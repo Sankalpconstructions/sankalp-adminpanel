@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Trash2, Search, X, Check, Share2, Instagram, Youtube, Globe, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -33,6 +34,8 @@ const detectPlatform = (url: string): string => {
 };
 
 export default function SocialFeedAdminPage() {
+  const { confirm } = useConfirm();
+
   const [feeds, setFeeds] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,7 +90,7 @@ export default function SocialFeedAdminPage() {
   }, [isModalOpen, feeds]);
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to remove this social feed item from the website?")) {
+    if (await confirm("Are you sure you want to remove this social feed item from the website?")) {
       try {
         const res = await fetch(`/api/social-feeds/${id}`, { method: "DELETE" });
         if (res.ok) {

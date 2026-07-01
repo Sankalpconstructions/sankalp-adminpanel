@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, X, Check, ImageIcon, Tag, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -12,6 +13,8 @@ const categories = ["Interior", "Exterior", "Amenities", "Construction", "Events
 const emptyForm = { title: "", category: "Interior", image: "", project: "" };
 
 export default function GalleryAdminPage() {
+  const { confirm } = useConfirm();
+
   const [gallery, setGallery] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +64,7 @@ export default function GalleryAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this gallery image?")) {
+    if (await confirm("Delete this gallery image?")) {
       try {
         const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
         if (res.ok) {

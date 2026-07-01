@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Trash2, Search, X, Check, Sparkles, Home, Droplets, Dumbbell, Gamepad, Wind, Timer, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -14,6 +15,8 @@ const iconMap: any = {
 };
 
 export default function AmenitiesAdminPage() {
+  const { confirm } = useConfirm();
+
   const [amenities, setAmenities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,7 +61,7 @@ export default function AmenitiesAdminPage() {
   );
 
   const handleDelete = async (id: string) => {
-    if (confirm("Remove this amenity from the website?")) {
+    if (await confirm("Remove this amenity from the website?")) {
       try {
         const res = await fetch(`/api/amenities/${id}`, { method: "DELETE" });
         if (res.ok) {

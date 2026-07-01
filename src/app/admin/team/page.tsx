@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, Check, ArrowLeft, Users, RefreshCw, UserCircle, Layout } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -7,6 +8,8 @@ import toast from "react-hot-toast";
 import { deleteFromImageKit } from "@/lib/imagekit-client";
 
 export default function TeamAdminPage() {
+  const { confirm } = useConfirm();
+
   const [members, setMembers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,7 +65,7 @@ export default function TeamAdminPage() {
   };
 
   const handleDelete = async (member: any) => {
-    if (confirm(`Are you sure you want to remove ${member.name}?`)) {
+    if (await confirm(`Are you sure you want to remove ${member.name}?`)) {
       try {
         if (member.image) deleteFromImageKit(member.image);
         const res = await fetch(`/api/team/${member._id || member.id}`, { method: "DELETE" });

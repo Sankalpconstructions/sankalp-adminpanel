@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, X, Check, Star, Quote, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -11,6 +12,8 @@ type Testimonial = { id: number; name: string; role: string; quote: string; rati
 const emptyForm = { name: "", role: "", quote: "", rating: 5, avatar: "" };
 
 export default function TestimonialsAdminPage() {
+  const { confirm } = useConfirm();
+
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,7 +61,7 @@ export default function TestimonialsAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this testimonial?")) {
+    if (await confirm("Delete this testimonial?")) {
       try {
         const res = await fetch(`/api/testimonials/${id}`, { method: "DELETE" });
         if (res.ok) {

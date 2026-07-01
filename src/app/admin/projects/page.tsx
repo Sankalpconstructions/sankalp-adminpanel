@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, Check, AlertCircle, Image as ImageIcon, MapPin, AlignLeft, Layers, ArrowLeft, Building2, ChevronRight, ChevronLeft, List, IndianRupee, Sparkles, Map, Navigation, X, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageUpload from "@/components/admin/ImageUpload";
@@ -8,6 +9,8 @@ import toast from "react-hot-toast";
 
 
 export default function ProjectsAdminPage() {
+  const { confirm } = useConfirm();
+
   const [projects, setProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,7 +155,7 @@ export default function ProjectsAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this project?")) {
+    if (await confirm("Are you sure you want to delete this project?")) {
       try {
         const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
         if (res.ok) {
@@ -429,8 +432,8 @@ export default function ProjectsAdminPage() {
           <motion.div key="form" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6 pb-20 max-w-5xl mx-auto">
             <div className="flex items-center gap-4 mb-2">
               <button
-                onClick={() => {
-                  if (confirm("Are you sure you want to go back? Unsaved progress will be lost.")) setIsFormOpen(false)
+                onClick={async () => {
+                  if (await confirm("Are you sure you want to go back? Unsaved progress will be lost.")) setIsFormOpen(false)
                 }}
                 className="p-2 bg-white border border-gray-200/50 rounded-xl text-gray-500 hover:text-[#711113] hover:bg-rose-50 transition-all shadow-sm shrink-0"
               >

@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import { Plus, Edit2, Trash2, Search, Check, ArrowLeft, HelpCircle, RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 export default function FAQAdminPage() {
+  const { confirm } = useConfirm();
+
   const [faqs, setFaqs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,7 +63,7 @@ export default function FAQAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this FAQ?")) {
+    if (await confirm("Are you sure you want to delete this FAQ?")) {
       try {
         const res = await fetch(`/api/faq/${id}`, { method: "DELETE" });
         if (res.ok) {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/context/ConfirmContext";
 import {
   Plus,
   Trash2,
@@ -12,6 +13,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AboutAdminPage() {
+  const { confirm } = useConfirm();
+
   const [entries, setEntries] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,7 +69,7 @@ export default function AboutAdminPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this section?")) return;
+    if (!(await confirm("Delete this section?"))) return;
 
     await fetch(`/api/about/${id}`, {
       method: "DELETE",
